@@ -5,6 +5,11 @@
 
 Flex Server is an application used for synchronization and streaming your media library to other devices.
 
+### Use case diagram
+![](use_case_diagram.png)
+
+### Mind map diagram
+![](mind_map_diagram.png)
 
 ## Requirements
 
