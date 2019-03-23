@@ -29,7 +29,7 @@ func main() {
 
 		log.Println("Shutting down server...")
 
-		if err := server.Shutdown(context.Background()); err!=nil {
+		if err := server.Shutdown(context.Background()); err != nil {
 			log.Fatal(err)
 		}
 		close(waitForClosingConnections)
