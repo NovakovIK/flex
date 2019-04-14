@@ -2,19 +2,23 @@ package main
 
 import (
 	"context"
-	"github.com/gorilla/mux"
-	log "github.com/sirupsen/logrus"
 	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
+
+	"github.com/NovakovIK/flex-server/flex"
+	"github.com/gorilla/mux"
+	log "github.com/sirupsen/logrus"
 )
 
 func main() {
+	_ = flex.Media{}
 	r := mux.NewRouter()
 	r.HandleFunc("/ping", func(writer http.ResponseWriter, request *http.Request) {
 		_, _ = writer.Write([]byte("pong"))
 	})
+
 	server := http.Server{
 		Addr:    ":8080",
 		Handler: r,
@@ -27,7 +31,7 @@ func main() {
 
 		<-signalChan
 
-		log.Println("Shutting down server...")
+		log.Infoln("Shutting down server...")
 
 		if err := server.Shutdown(context.Background()); err != nil {
 			log.Fatal(err)
@@ -35,6 +39,7 @@ func main() {
 		close(waitForClosingConnections)
 
 	}()
+	log.Infof("Starting server on %s", server.Addr)
 	if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 		log.Fatal(err)
 	}
