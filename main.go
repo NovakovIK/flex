@@ -2,21 +2,78 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"net/http"
 	"os"
 	"os/signal"
+	"strconv"
 	"syscall"
 
-	"github.com/NovakovIK/flex-server/flex"
+	"github.com/NovakovIK/flex-server/flex/data"
 	"github.com/gorilla/mux"
 	log "github.com/sirupsen/logrus"
 )
 
+var mediaHardCode = []data.Media{
+	{
+		MediaID:  1,
+		Name:     "Big Buck Bunny",
+		Hash:     nil,
+		Duration: 20 * 60,
+	},
+	{
+		MediaID:  2,
+		Name:     "Jojo Bizarre Adventure",
+		Hash:     nil,
+		Duration: 20 * 30,
+	},
+}
+
 func main() {
-	_ = flex.Media{}
 	r := mux.NewRouter()
-	r.HandleFunc("/ping", func(writer http.ResponseWriter, request *http.Request) {
-		_, _ = writer.Write([]byte("pong"))
+	r.HandleFunc("/api/media", func(w http.ResponseWriter, r *http.Request) {
+		var media []data.Media
+		media = mediaHardCode
+		mediaJSON, err := json.Marshal(media)
+		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			log.Error(err)
+			return
+		}
+
+		if _, err = w.Write(mediaJSON); err != nil {
+			log.Error(err)
+		}
+
+	})
+
+	r.HandleFunc("/api/media/{mediaID}", func(w http.ResponseWriter, r *http.Request) {
+		vars := mux.Vars(r)
+		mediaID, err := strconv.ParseInt(vars["mediaID"], 10, 64)
+
+		if err != nil {
+			w.WriteHeader(http.StatusBadRequest)
+			log.Error(err)
+			return
+		}
+
+		for _, m := range mediaHardCode {
+			if m.MediaID == mediaID {
+				mediaJSON, err := json.Marshal(m)
+				if err != nil {
+					w.WriteHeader(http.StatusInternalServerError)
+					log.Error(err)
+					return
+				}
+
+				if _, err = w.Write(mediaJSON); err != nil {
+					log.Error(err)
+				}
+				return
+			}
+		}
+
+		http.NotFound(w, r)
 	})
 
 	server := http.Server{
@@ -39,7 +96,7 @@ func main() {
 		close(waitForClosingConnections)
 
 	}()
-	log.Infof("Starting server on %s", server.Addr)
+	log.Infof("Starting server on http://localhost%s", server.Addr)
 	if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 		log.Fatal(err)
 	}

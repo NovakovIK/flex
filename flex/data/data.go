@@ -1,4 +1,4 @@
-package flex
+package data
 
 type Media struct {
 	MediaID  int64  `json:"media_id"`
