@@ -10,8 +10,6 @@ type Media struct {
 type Profile struct {
 	ProfileID int64  `json:"profile_id"`
 	Name      string `json:"name"`
-	Hash      []byte `json:"hash"`
-	Duration  int64  `json:"duration"`
 }
 
 type ProfileViewingInfo struct {
