@@ -8,20 +8,14 @@ import (
 	"syscall"
 
 	"github.com/NovakovIK/flex-server/flex/api"
-	"github.com/gorilla/mux"
+	"github.com/NovakovIK/flex-server/flex/storage"
 	log "github.com/sirupsen/logrus"
 )
 
 func main() {
-	r := mux.NewRouter()
-	r.HandleFunc("/api/media", api.MediaList).Methods("GET")
-	r.HandleFunc("/api/media/{mediaID}", api.MediaByID).Methods("GET")
-	r.HandleFunc("/api/profile", api.ProfileList).Methods("GET")
-	r.HandleFunc("/api/profile/{profileID}", api.ProfileByID).Methods("GET")
-
 	server := http.Server{
 		Addr:    ":8080",
-		Handler: r,
+		Handler: api.NewRouter(storage.NewStorage()),
 	}
 	waitForClosingConnections := make(chan struct{})
 	go func() {

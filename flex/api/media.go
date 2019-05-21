@@ -2,7 +2,6 @@ package api
 
 import (
 	"encoding/json"
-	"github.com/NovakovIK/flex-server/flex/data"
 	"github.com/gorilla/mux"
 	log "github.com/sirupsen/logrus"
 	"net/http"
@@ -10,61 +9,54 @@ import (
 	"strconv"
 )
 
-var mediaHardCode = []data.Media{
-	{
-		MediaID:  1,
-		Name:     "Big Buck Bunny",
-		Hash:     nil,
-		Duration: 20 * 60,
-	},
-	{
-		MediaID:  2,
-		Name:     "Jojo Bizarre Adventure",
-		Hash:     nil,
-		Duration: 10 * 60,
-	},
-}
+func (s *Server) MediaList(w http.ResponseWriter, r *http.Request) {
+	media, err := s.storage.MediaDAO.FetchAll()
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		log.Error(err)
+		return
+	}
 
-func MediaList(w http.ResponseWriter, r *http.Request) {
-	media := mediaHardCode
 	mediaJSON, err := json.Marshal(media)
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 		log.Error(err)
 		return
 	}
 
 	if _, err = w.Write(mediaJSON); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 		log.Error(err)
+		return
 	}
-
 }
 
-func MediaByID(w http.ResponseWriter, r *http.Request) {
+func (s *Server) MediaByID(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	mediaID, err := strconv.ParseInt(vars["mediaID"], 10, 64)
-
 	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
+		http.Error(w, err.Error(), http.StatusBadRequest)
 		log.Error(err)
 		return
 	}
 
-	for _, m := range mediaHardCode {
-		if m.MediaID == mediaID {
-			mediaJSON, err := json.Marshal(m)
-			if err != nil {
-				w.WriteHeader(http.StatusInternalServerError)
-				log.Error(err)
-				return
-			}
-
-			if _, err = w.Write(mediaJSON); err != nil {
-				log.Error(err)
-			}
-			return
-		}
+	media, err := s.storage.MediaDAO.FetchByID(mediaID)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		log.Error(err)
+		return
 	}
 
-	http.NotFound(w, r)
+	mediaJSON, err := json.Marshal(media)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		log.Error(err)
+		return
+	}
+
+	if _, err = w.Write(mediaJSON); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		log.Error(err)
+		return
+	}
 }

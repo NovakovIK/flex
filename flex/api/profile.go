@@ -2,7 +2,7 @@ package api
 
 import (
 	"encoding/json"
-	"github.com/NovakovIK/flex-server/flex/data"
+	"github.com/NovakovIK/flex-server/flex/storage"
 	"github.com/gorilla/mux"
 	log "github.com/sirupsen/logrus"
 	"net/http"
@@ -10,18 +10,9 @@ import (
 	"strconv"
 )
 
-var profileHardCode = []data.Profile{
-	{
-		ProfileID: 1,
-		Name:      "Alex",
-	},
-	{
-		ProfileID: 2,
-		Name:      "Wanya",
-	},
-}
+var profileHardCode = []storage.Profile{}
 
-func ProfileList(w http.ResponseWriter, r *http.Request) {
+func (s *Server) ProfileList(w http.ResponseWriter, r *http.Request) {
 	profile := profileHardCode
 	profileJSON, err := json.Marshal(profile)
 	if err != nil {
@@ -33,9 +24,9 @@ func ProfileList(w http.ResponseWriter, r *http.Request) {
 	if _, err = w.Write(profileJSON); err != nil {
 		log.Error(err)
 	}
-
 }
-func ProfileByID(w http.ResponseWriter, r *http.Request) {
+
+func (s *Server) ProfileByID(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	profileID, err := strconv.ParseInt(vars["profileID"], 10, 64)
 
@@ -46,7 +37,7 @@ func ProfileByID(w http.ResponseWriter, r *http.Request) {
 	}
 
 	for _, m := range profileHardCode {
-		if m.ProfileID == profileID {
+		if m.ID == profileID {
 			mediaJSON, err := json.Marshal(m)
 			if err != nil {
 				w.WriteHeader(http.StatusInternalServerError)
@@ -60,6 +51,5 @@ func ProfileByID(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}
-
 	http.NotFound(w, r)
 }
