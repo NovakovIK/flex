@@ -1,0 +1,25 @@
+type Media {
+    id:             Int!
+    name:           String!
+    duration:       Int!
+    last_modified:  Int!
+    status:         String!
+}
+
+type Profile {
+    id:     Int!
+    name:   String!
+}
+
+type ProfileViewingInfo{
+    media_id: Int!
+    profile_id: Int!
+    time_point: Int!
+    timestamp: Int!
+}
+
+type Query {
+    media: [Media!]
+    profiles: [Profile!]
+    viewing_info(profile_id: Int): [ProfileViewingInfo!]
+}
