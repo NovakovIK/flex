@@ -41,7 +41,21 @@ func (r *queryResolver) Media(ctx context.Context) ([]*flex.Media, error) {
 	return media, nil
 }
 func (r *queryResolver) Profiles(ctx context.Context) ([]*flex.Profile, error) {
-	panic("not implemented")
+	data, err := r.storage.ProfileDAO.FetchAll()
+	if err != nil {
+		return nil, err
+	}
+
+	var profiles []*flex.Profile
+	for i := range data {
+		d := &data[i]
+		profiles = append(profiles, &flex.Profile{
+			ID:   int(d.ID),
+			Name: d.Name,
+		})
+	}
+
+	return profiles, nil
 }
 func (r *queryResolver) ViewingInfo(ctx context.Context, profileID *int) ([]*flex.ProfileViewingInfo, error) {
 	panic("not implemented")

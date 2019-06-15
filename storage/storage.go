@@ -106,8 +106,15 @@ func (d *MediaDAO) FetchByID(id int64) (*Media, error) {
 	return &media, nil
 }
 
-//
-//func (d *ProfileDAO) FetchAll() []Profile        {}
+func (d *ProfileDAO) FetchAll() ([]Profile, error) {
+	profiles := make([]Profile, 0)
+	if err := d.DB.Select(&profiles, "select * from profile order by ProfileID asc"); err != nil {
+		return nil, err
+	}
+
+	return profiles, nil
+}
+
 //func (d *ProfileDAO) FetchByID(id int64) Profile {}
 //
 //func (d *ProfileViewingInfoDAO) FetchAll() []ProfileViewingInfo                 {}
