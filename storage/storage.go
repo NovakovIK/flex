@@ -94,16 +94,14 @@ func (d *MediaDAO) FetchAll() ([]Media, error) {
 	if err := d.DB.Select(&media, "select * from media order by LastModified desc"); err != nil {
 		return nil, err
 	}
-
 	return media, nil
 }
-func (d *MediaDAO) FetchByID(id int64) (*Media, error) {
-	media := Media{}
-	if err := d.DB.Get(&media, "select * from media where MediaID=$1", id); err != nil {
+func (d *MediaDAO) FetchByID(id int64) ([]Media, error) {
+	media := make([]Media, 0)
+	if err := d.DB.Select(&media, "select * from media where MediaID = $1", id); err != nil {
 		return nil, err
 	}
-
-	return &media, nil
+	return media, nil
 }
 
 func (d *ProfileDAO) FetchAll() ([]Profile, error) {
@@ -111,13 +109,45 @@ func (d *ProfileDAO) FetchAll() ([]Profile, error) {
 	if err := d.DB.Select(&profiles, "select * from profile order by ProfileID asc"); err != nil {
 		return nil, err
 	}
-
 	return profiles, nil
 }
 
-//func (d *ProfileDAO) FetchByID(id int64) Profile {}
-//
-//func (d *ProfileViewingInfoDAO) FetchAll() []ProfileViewingInfo                 {}
-//func (d *ProfileViewingInfoDAO) FetchByMediaID(id int64) []ProfileViewingInfo   {}
-//func (d *ProfileViewingInfoDAO) FetchByProfileID(id int64) []ProfileViewingInfo {}
-//func (d *ProfileViewingInfoDAO) FetchByMediaIDAndByProfileID(mediaID, profileID int64) ProfileViewingInfo {}
+func (d *ProfileDAO) FetchByID(id int64) ([]Profile, error) {
+	profiles := make([]Profile, 0)
+	if err := d.DB.Select(&profiles, "select * from profile where ProfileID = $1", id); err != nil {
+		return nil, err
+	}
+	return profiles, nil
+}
+
+func (d *ProfileViewingInfoDAO) FetchByProfileID(id int64) ([]ProfileViewingInfo, error) {
+	viewingInfo := make([]ProfileViewingInfo, 0)
+	if err := d.DB.Select(&viewingInfo, "select * from profile_viewing_info where ProfileID = $1 order by Timestamp desc", id); err != nil {
+		return nil, err
+	}
+	return viewingInfo, nil
+}
+
+func (d *ProfileViewingInfoDAO) FetchByMediaID(id int64) ([]ProfileViewingInfo, error) {
+	viewingInfo := make([]ProfileViewingInfo, 0)
+	if err := d.DB.Select(&viewingInfo, "select * from profile_viewing_info where MediaID = $1 order by Timestamp desc", id); err != nil {
+		return nil, err
+	}
+	return viewingInfo, nil
+}
+
+func (d *ProfileViewingInfoDAO) FetchByMediaIDAndProfileID(mediaID, profileID int64) ([]ProfileViewingInfo, error) {
+	viewingInfo := make([]ProfileViewingInfo, 0)
+	if err := d.DB.Select(&viewingInfo, "select * from profile_viewing_info where MediaID = $1 and ProfileID = $2", mediaID, profileID); err != nil {
+		return nil, err
+	}
+	return viewingInfo, nil
+}
+
+func (d *ProfileViewingInfoDAO) FetchAll() ([]ProfileViewingInfo, error) {
+	viewingInfo := make([]ProfileViewingInfo, 0)
+	if err := d.DB.Select(&viewingInfo, "select * from profile_viewing_info order by Timestamp desc"); err != nil {
+		return nil, err
+	}
+	return viewingInfo, nil
+}

@@ -61,16 +61,16 @@ type ComplexityRoot struct {
 	}
 
 	Query struct {
-		Media       func(childComplexity int) int
-		Profiles    func(childComplexity int) int
-		ViewingInfo func(childComplexity int, profileID *int) int
+		Media       func(childComplexity int, id *int) int
+		Profiles    func(childComplexity int, id *int) int
+		ViewingInfo func(childComplexity int, mediaID *int, profileID *int) int
 	}
 }
 
 type QueryResolver interface {
-	Media(ctx context.Context) ([]*Media, error)
-	Profiles(ctx context.Context) ([]*Profile, error)
-	ViewingInfo(ctx context.Context, profileID *int) ([]*ProfileViewingInfo, error)
+	Media(ctx context.Context, id *int) ([]*Media, error)
+	Profiles(ctx context.Context, id *int) ([]*Profile, error)
+	ViewingInfo(ctx context.Context, mediaID *int, profileID *int) ([]*ProfileViewingInfo, error)
 }
 
 type executableSchema struct {
@@ -170,14 +170,24 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			break
 		}
 
-		return e.complexity.Query.Media(childComplexity), true
+		args, err := ec.field_Query_media_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.Media(childComplexity, args["id"].(*int)), true
 
 	case "Query.profiles":
 		if e.complexity.Query.Profiles == nil {
 			break
 		}
 
-		return e.complexity.Query.Profiles(childComplexity), true
+		args, err := ec.field_Query_profiles_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.Profiles(childComplexity, args["id"].(*int)), true
 
 	case "Query.viewing_info":
 		if e.complexity.Query.ViewingInfo == nil {
@@ -189,7 +199,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Query.ViewingInfo(childComplexity, args["profile_id"].(*int)), true
+		return e.complexity.Query.ViewingInfo(childComplexity, args["media_id"].(*int), args["profile_id"].(*int)), true
 
 	}
 	return 0, false
@@ -276,9 +286,9 @@ type ProfileViewingInfo{
 }
 
 type Query {
-    media: [Media!]
-    profiles: [Profile!]
-    viewing_info(profile_id: Int): [ProfileViewingInfo!]
+    media(id: Int): [Media!]
+    profiles(id: Int): [Profile!]
+    viewing_info(media_id: Int, profile_id: Int): [ProfileViewingInfo!]
 }
 `},
 )
@@ -301,17 +311,53 @@ func (ec *executionContext) field_Query___type_args(ctx context.Context, rawArgs
 	return args, nil
 }
 
-func (ec *executionContext) field_Query_viewing_info_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+func (ec *executionContext) field_Query_media_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
 	var arg0 *int
-	if tmp, ok := rawArgs["profile_id"]; ok {
+	if tmp, ok := rawArgs["id"]; ok {
 		arg0, err = ec.unmarshalOInt2ᚖint(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
 	}
-	args["profile_id"] = arg0
+	args["id"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Query_profiles_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 *int
+	if tmp, ok := rawArgs["id"]; ok {
+		arg0, err = ec.unmarshalOInt2ᚖint(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["id"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Query_viewing_info_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 *int
+	if tmp, ok := rawArgs["media_id"]; ok {
+		arg0, err = ec.unmarshalOInt2ᚖint(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["media_id"] = arg0
+	var arg1 *int
+	if tmp, ok := rawArgs["profile_id"]; ok {
+		arg1, err = ec.unmarshalOInt2ᚖint(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["profile_id"] = arg1
 	return args, nil
 }
 
@@ -654,10 +700,17 @@ func (ec *executionContext) _Query_media(ctx context.Context, field graphql.Coll
 		IsMethod: true,
 	}
 	ctx = graphql.WithResolverContext(ctx, rctx)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Query_media_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	rctx.Args = args
 	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
 	resTmp := ec.FieldMiddleware(ctx, nil, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().Media(rctx)
+		return ec.resolvers.Query().Media(rctx, args["id"].(*int))
 	})
 	if resTmp == nil {
 		return graphql.Null
@@ -678,10 +731,17 @@ func (ec *executionContext) _Query_profiles(ctx context.Context, field graphql.C
 		IsMethod: true,
 	}
 	ctx = graphql.WithResolverContext(ctx, rctx)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Query_profiles_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	rctx.Args = args
 	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
 	resTmp := ec.FieldMiddleware(ctx, nil, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().Profiles(rctx)
+		return ec.resolvers.Query().Profiles(rctx, args["id"].(*int))
 	})
 	if resTmp == nil {
 		return graphql.Null
@@ -712,7 +772,7 @@ func (ec *executionContext) _Query_viewing_info(ctx context.Context, field graph
 	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
 	resTmp := ec.FieldMiddleware(ctx, nil, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().ViewingInfo(rctx, args["profile_id"].(*int))
+		return ec.resolvers.Query().ViewingInfo(rctx, args["media_id"].(*int), args["profile_id"].(*int))
 	})
 	if resTmp == nil {
 		return graphql.Null

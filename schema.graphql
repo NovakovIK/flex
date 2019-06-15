@@ -19,7 +19,7 @@ type ProfileViewingInfo{
 }
 
 type Query {
-    media: [Media!]
-    profiles: [Profile!]
-    viewing_info(profile_id: Int): [ProfileViewingInfo!]
+    media(id: Int): [Media!]
+    profiles(id: Int): [Profile!]
+    viewing_info(media_id: Int, profile_id: Int): [ProfileViewingInfo!]
 }

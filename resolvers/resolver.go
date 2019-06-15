@@ -20,8 +20,16 @@ func (r *Resolver) Query() flex.QueryResolver {
 
 type queryResolver struct{ *Resolver }
 
-func (r *queryResolver) Media(ctx context.Context) ([]*flex.Media, error) {
-	data, err := r.storage.MediaDAO.FetchAll()
+func (r *queryResolver) Media(ctx context.Context, id *int) ([]*flex.Media, error) {
+	var data []storage.Media
+	var err error
+
+	if id != nil {
+		data, err = r.storage.MediaDAO.FetchByID(int64(*id))
+	} else {
+		data, err = r.storage.MediaDAO.FetchAll()
+	}
+
 	if err != nil {
 		return nil, err
 	}
@@ -40,8 +48,16 @@ func (r *queryResolver) Media(ctx context.Context) ([]*flex.Media, error) {
 
 	return media, nil
 }
-func (r *queryResolver) Profiles(ctx context.Context) ([]*flex.Profile, error) {
-	data, err := r.storage.ProfileDAO.FetchAll()
+func (r *queryResolver) Profiles(ctx context.Context, id *int) ([]*flex.Profile, error) {
+	var data []storage.Profile
+	var err error
+
+	if id != nil {
+		data, err = r.storage.ProfileDAO.FetchByID(int64(*id))
+	} else {
+		data, err = r.storage.ProfileDAO.FetchAll()
+	}
+
 	if err != nil {
 		return nil, err
 	}
@@ -57,6 +73,33 @@ func (r *queryResolver) Profiles(ctx context.Context) ([]*flex.Profile, error) {
 
 	return profiles, nil
 }
-func (r *queryResolver) ViewingInfo(ctx context.Context, profileID *int) ([]*flex.ProfileViewingInfo, error) {
-	panic("not implemented")
+func (r *queryResolver) ViewingInfo(ctx context.Context, mediaID *int, profileID *int) ([]*flex.ProfileViewingInfo, error) {
+	var data []storage.ProfileViewingInfo
+	var err error
+
+	if mediaID != nil && profileID != nil {
+		data, err = r.storage.ProfileViewingInfoDAO.FetchByMediaIDAndProfileID(int64(*mediaID), int64(*profileID))
+	} else if mediaID != nil {
+		data, err = r.storage.ProfileViewingInfoDAO.FetchByMediaID(int64(*mediaID))
+	} else if profileID != nil {
+		data, err = r.storage.ProfileViewingInfoDAO.FetchByProfileID(int64(*profileID))
+	} else {
+		data, err = r.storage.ProfileViewingInfoDAO.FetchAll()
+	}
+
+	if err != nil {
+		return nil, err
+	}
+	var viewingInfo []*flex.ProfileViewingInfo
+	for i := range data {
+		d := &data[i]
+		viewingInfo = append(viewingInfo, &flex.ProfileViewingInfo{
+			MediaID:   int(d.MediaID),
+			ProfileID: int(d.ProfileID),
+			TimePoint: int(d.ProfileID),
+			Timestamp: int(d.Timestamp),
+		})
+	}
+
+	return viewingInfo, nil
 }
