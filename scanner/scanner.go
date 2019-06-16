@@ -6,7 +6,6 @@ import (
 	"path/filepath"
 )
 
-
 type Scanner struct {
 	CreatedFiles chan string
 	RemovedFiles chan string
@@ -18,8 +17,8 @@ func NewScanner(stor *storage.Storage, dirPath string) *Scanner {
 	return &Scanner{
 		CreatedFiles: make(chan string),
 		RemovedFiles: make(chan string),
-		storage: stor,
-		path:    dirPath,
+		storage:      stor,
+		path:         dirPath,
 	}
 }
 

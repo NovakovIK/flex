@@ -28,8 +28,8 @@ func (s SyncUtil) Start() error {
 				ID:           0,
 				Name:         path.Base(filePath),
 				Path:         filePath,
-				Duration:     rand.Int63(),
-				LastModified: rand.Int63(),
+				Duration:     int(rand.Int63()),
+				LastModified: int(rand.Int63()),
 				Status:       storage.Available,
 			}
 
@@ -45,5 +45,4 @@ func (s SyncUtil) Start() error {
 
 		}
 	}
-	return nil
 }

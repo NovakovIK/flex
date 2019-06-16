@@ -132,5 +132,14 @@ func (r *mutationResolver) UpdateProfile(ctx context.Context, id int, newName st
 }
 
 func (r *mutationResolver) UpdateOrInsertProfileViewingInfo(ctx context.Context, input flex.ProfileViewingInfoInput) (*flex.ProfileViewingInfo, error) {
-	panic("not implemented")
+	info, err := r.storage.ProfileViewingInfoDAO.UpdateOrInsert(input.MediaID, input.ProfileID, input.TimePoint, input.Timestamp)
+	if err != nil {
+		return nil, err
+	}
+	return &flex.ProfileViewingInfo{
+		MediaID:   info.MediaID,
+		ProfileID: info.ProfileID,
+		TimePoint: info.TimePoint,
+		Timestamp: info.Timestamp,
+	}, nil
 }

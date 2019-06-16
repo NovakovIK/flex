@@ -105,13 +105,13 @@ func (d *MediaDAO) FetchByID(id int) ([]Media, error) {
 }
 func (d MediaDAO) Insert(media Media) error {
 	_, err := d.DB.Exec(
-		"insert into media(MediaName, Path, Duration, LastModified, Status) VALUES ($1, $2, $3, $4, $5)",
+		"insert into media(MediaName, Path, Duration, LastModified, Status) values ($1, $2, $3, $4, $5)",
 		media.Name, media.Path, media.Duration, media.LastModified, media.Status,
-		)
+	)
 	return err
 }
 func (d MediaDAO) DeleteByPath(path string) error {
-	_, err := d.DB.Exec("DELETE FROM media WHERE Path = $1", path)
+	_, err := d.DB.Exec("delete from media where Path = $1", path)
 	return err
 }
 
@@ -188,5 +188,15 @@ func (d *ProfileViewingInfoDAO) FetchAll() ([]ProfileViewingInfo, error) {
 }
 
 func (d *ProfileViewingInfoDAO) UpdateOrInsert(mediaID, profileID, timePoint, timestamp int) (*ProfileViewingInfo, error) {
-	return nil, nil
+	if _, err := d.DB.Exec(`
+insert into profile_viewing_info(MediaID, ProfileID, TimePoint, Timestamp) values ($1, $2, $3, $4)
+on conflict(MediaID, ProfileID) do update set TimePoint = $3, Timestamp = $4`, mediaID, profileID, timePoint, timestamp); err != nil {
+		return nil, err
+	}
+
+	info := &ProfileViewingInfo{}
+	if err := d.DB.Get(info, "select * from profile_viewing_info where MediaID = $1 and ProfileID = $2", mediaID, profileID); err != nil {
+		return nil, err
+	}
+	return info, nil
 }
