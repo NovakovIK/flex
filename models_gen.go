@@ -21,3 +21,10 @@ type ProfileViewingInfo struct {
 	TimePoint int `json:"time_point"`
 	Timestamp int `json:"timestamp"`
 }
+
+type ProfileViewingInfoInput struct {
+	MediaID   int `json:"media_id"`
+	ProfileID int `json:"profile_id"`
+	TimePoint int `json:"time_point"`
+	Timestamp int `json:"timestamp"`
+}

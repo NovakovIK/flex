@@ -96,7 +96,7 @@ func (d *MediaDAO) FetchAll() ([]Media, error) {
 	}
 	return media, nil
 }
-func (d *MediaDAO) FetchByID(id int64) ([]Media, error) {
+func (d *MediaDAO) FetchByID(id int) ([]Media, error) {
 	media := make([]Media, 0)
 	if err := d.DB.Select(&media, "select * from media where MediaID = $1", id); err != nil {
 		return nil, err
@@ -112,7 +112,7 @@ func (d *ProfileDAO) FetchAll() ([]Profile, error) {
 	return profiles, nil
 }
 
-func (d *ProfileDAO) FetchByID(id int64) ([]Profile, error) {
+func (d *ProfileDAO) FetchByID(id int) ([]Profile, error) {
 	profiles := make([]Profile, 0)
 	if err := d.DB.Select(&profiles, "select * from profile where ProfileID = $1", id); err != nil {
 		return nil, err
@@ -120,7 +120,31 @@ func (d *ProfileDAO) FetchByID(id int64) ([]Profile, error) {
 	return profiles, nil
 }
 
-func (d *ProfileViewingInfoDAO) FetchByProfileID(id int64) ([]ProfileViewingInfo, error) {
+func (d *ProfileDAO) New(name string) (*Profile, error) {
+	if _, err := d.DB.Exec("insert into profile(ProfileName) VALUES ($1)", name); err != nil {
+		return nil, err
+	}
+
+	profile := &Profile{}
+	if err := d.DB.Get(profile, "select * from profile where ProfileName = $1", name); err != nil {
+		return nil, err
+	}
+	return profile, nil
+}
+
+func (d *ProfileDAO) Update(id int, name string) (*Profile, error) {
+	if _, err := d.DB.Exec("update profile set ProfileName = $1 where ProfileID = $2", name, id); err != nil {
+		return nil, err
+	}
+
+	profile := &Profile{}
+	if err := d.DB.Get(profile, "select * from profile where ProfileName = $1", name); err != nil {
+		return nil, err
+	}
+	return profile, nil
+}
+
+func (d *ProfileViewingInfoDAO) FetchByProfileID(id int) ([]ProfileViewingInfo, error) {
 	viewingInfo := make([]ProfileViewingInfo, 0)
 	if err := d.DB.Select(&viewingInfo, "select * from profile_viewing_info where ProfileID = $1 order by Timestamp desc", id); err != nil {
 		return nil, err
@@ -128,7 +152,7 @@ func (d *ProfileViewingInfoDAO) FetchByProfileID(id int64) ([]ProfileViewingInfo
 	return viewingInfo, nil
 }
 
-func (d *ProfileViewingInfoDAO) FetchByMediaID(id int64) ([]ProfileViewingInfo, error) {
+func (d *ProfileViewingInfoDAO) FetchByMediaID(id int) ([]ProfileViewingInfo, error) {
 	viewingInfo := make([]ProfileViewingInfo, 0)
 	if err := d.DB.Select(&viewingInfo, "select * from profile_viewing_info where MediaID = $1 order by Timestamp desc", id); err != nil {
 		return nil, err
@@ -136,7 +160,7 @@ func (d *ProfileViewingInfoDAO) FetchByMediaID(id int64) ([]ProfileViewingInfo, 
 	return viewingInfo, nil
 }
 
-func (d *ProfileViewingInfoDAO) FetchByMediaIDAndProfileID(mediaID, profileID int64) ([]ProfileViewingInfo, error) {
+func (d *ProfileViewingInfoDAO) FetchByMediaIDAndProfileID(mediaID, profileID int) ([]ProfileViewingInfo, error) {
 	viewingInfo := make([]ProfileViewingInfo, 0)
 	if err := d.DB.Select(&viewingInfo, "select * from profile_viewing_info where MediaID = $1 and ProfileID = $2", mediaID, profileID); err != nil {
 		return nil, err
@@ -150,4 +174,8 @@ func (d *ProfileViewingInfoDAO) FetchAll() ([]ProfileViewingInfo, error) {
 		return nil, err
 	}
 	return viewingInfo, nil
+}
+
+func (d *ProfileViewingInfoDAO) UpdateOrInsert(mediaID, profileID, timePoint, timestamp int) (*ProfileViewingInfo, error) {
+	return nil, nil
 }

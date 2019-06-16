@@ -33,6 +33,7 @@ type Config struct {
 }
 
 type ResolverRoot interface {
+	Mutation() MutationResolver
 	Query() QueryResolver
 }
 
@@ -46,6 +47,12 @@ type ComplexityRoot struct {
 		LastModified func(childComplexity int) int
 		Name         func(childComplexity int) int
 		Status       func(childComplexity int) int
+	}
+
+	Mutation struct {
+		NewProfile                       func(childComplexity int, name string) int
+		UpdateOrInsertProfileViewingInfo func(childComplexity int, input ProfileViewingInfoInput) int
+		UpdateProfile                    func(childComplexity int, id int, newName string) int
 	}
 
 	Profile struct {
@@ -67,6 +74,11 @@ type ComplexityRoot struct {
 	}
 }
 
+type MutationResolver interface {
+	NewProfile(ctx context.Context, name string) (*Profile, error)
+	UpdateProfile(ctx context.Context, id int, newName string) (*Profile, error)
+	UpdateOrInsertProfileViewingInfo(ctx context.Context, input ProfileViewingInfoInput) (*ProfileViewingInfo, error)
+}
 type QueryResolver interface {
 	Media(ctx context.Context, id *int) ([]*Media, error)
 	Profiles(ctx context.Context, id *int) ([]*Profile, error)
@@ -122,6 +134,42 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Media.Status(childComplexity), true
+
+	case "Mutation.newProfile":
+		if e.complexity.Mutation.NewProfile == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_newProfile_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.NewProfile(childComplexity, args["name"].(string)), true
+
+	case "Mutation.updateOrInsertProfileViewingInfo":
+		if e.complexity.Mutation.UpdateOrInsertProfileViewingInfo == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_updateOrInsertProfileViewingInfo_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.UpdateOrInsertProfileViewingInfo(childComplexity, args["input"].(ProfileViewingInfoInput)), true
+
+	case "Mutation.updateProfile":
+		if e.complexity.Mutation.UpdateProfile == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_updateProfile_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.UpdateProfile(childComplexity, args["id"].(int), args["new_name"].(string)), true
 
 	case "Profile.id":
 		if e.complexity.Profile.ID == nil {
@@ -223,7 +271,20 @@ func (e *executableSchema) Query(ctx context.Context, op *ast.OperationDefinitio
 }
 
 func (e *executableSchema) Mutation(ctx context.Context, op *ast.OperationDefinition) *graphql.Response {
-	return graphql.ErrorResponse(ctx, "mutations are not supported")
+	ec := executionContext{graphql.GetRequestContext(ctx), e}
+
+	buf := ec.RequestMiddleware(ctx, func(ctx context.Context) []byte {
+		data := ec._Mutation(ctx, op.SelectionSet)
+		var buf bytes.Buffer
+		data.MarshalGQL(&buf)
+		return buf.Bytes()
+	})
+
+	return &graphql.Response{
+		Data:       buf,
+		Errors:     ec.Errors,
+		Extensions: ec.Extensions,
+	}
 }
 
 func (e *executableSchema) Subscription(ctx context.Context, op *ast.OperationDefinition) func() *graphql.Response {
@@ -279,10 +340,17 @@ type Profile {
 }
 
 type ProfileViewingInfo{
-    media_id: Int!
+    media_id:   Int!
     profile_id: Int!
     time_point: Int!
-    timestamp: Int!
+    timestamp:  Int!
+}
+
+input ProfileViewingInfoInput{
+    media_id:   Int!
+    profile_id: Int!
+    time_point: Int!
+    timestamp:  Int!
 }
 
 type Query {
@@ -290,12 +358,68 @@ type Query {
     profiles(id: Int): [Profile!]
     viewing_info(media_id: Int, profile_id: Int): [ProfileViewingInfo!]
 }
+
+type Mutation {
+    newProfile(name: String!): Profile!
+    updateProfile(id: Int!, new_name: String!): Profile!
+    updateOrInsertProfileViewingInfo(input: ProfileViewingInfoInput!): ProfileViewingInfo!
+}
 `},
 )
 
 // endregion ************************** generated!.gotpl **************************
 
 // region    ***************************** args.gotpl *****************************
+
+func (ec *executionContext) field_Mutation_newProfile_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 string
+	if tmp, ok := rawArgs["name"]; ok {
+		arg0, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["name"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_updateOrInsertProfileViewingInfo_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 ProfileViewingInfoInput
+	if tmp, ok := rawArgs["input"]; ok {
+		arg0, err = ec.unmarshalNProfileViewingInfoInput2githubᚗcomᚋNovakovIKᚋflexᚐProfileViewingInfoInput(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_updateProfile_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 int
+	if tmp, ok := rawArgs["id"]; ok {
+		arg0, err = ec.unmarshalNInt2int(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["id"] = arg0
+	var arg1 string
+	if tmp, ok := rawArgs["new_name"]; ok {
+		arg1, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["new_name"] = arg1
+	return args, nil
+}
 
 func (ec *executionContext) field_Query___type_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
@@ -526,6 +650,108 @@ func (ec *executionContext) _Media_status(ctx context.Context, field graphql.Col
 	rctx.Result = res
 	ctx = ec.Tracer.StartFieldChildExecution(ctx)
 	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Mutation_newProfile(ctx context.Context, field graphql.CollectedField) graphql.Marshaler {
+	ctx = ec.Tracer.StartFieldExecution(ctx, field)
+	defer func() { ec.Tracer.EndFieldExecution(ctx) }()
+	rctx := &graphql.ResolverContext{
+		Object:   "Mutation",
+		Field:    field,
+		Args:     nil,
+		IsMethod: true,
+	}
+	ctx = graphql.WithResolverContext(ctx, rctx)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_newProfile_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	rctx.Args = args
+	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
+	resTmp := ec.FieldMiddleware(ctx, nil, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().NewProfile(rctx, args["name"].(string))
+	})
+	if resTmp == nil {
+		if !ec.HasError(rctx) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*Profile)
+	rctx.Result = res
+	ctx = ec.Tracer.StartFieldChildExecution(ctx)
+	return ec.marshalNProfile2ᚖgithubᚗcomᚋNovakovIKᚋflexᚐProfile(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Mutation_updateProfile(ctx context.Context, field graphql.CollectedField) graphql.Marshaler {
+	ctx = ec.Tracer.StartFieldExecution(ctx, field)
+	defer func() { ec.Tracer.EndFieldExecution(ctx) }()
+	rctx := &graphql.ResolverContext{
+		Object:   "Mutation",
+		Field:    field,
+		Args:     nil,
+		IsMethod: true,
+	}
+	ctx = graphql.WithResolverContext(ctx, rctx)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_updateProfile_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	rctx.Args = args
+	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
+	resTmp := ec.FieldMiddleware(ctx, nil, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().UpdateProfile(rctx, args["id"].(int), args["new_name"].(string))
+	})
+	if resTmp == nil {
+		if !ec.HasError(rctx) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*Profile)
+	rctx.Result = res
+	ctx = ec.Tracer.StartFieldChildExecution(ctx)
+	return ec.marshalNProfile2ᚖgithubᚗcomᚋNovakovIKᚋflexᚐProfile(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Mutation_updateOrInsertProfileViewingInfo(ctx context.Context, field graphql.CollectedField) graphql.Marshaler {
+	ctx = ec.Tracer.StartFieldExecution(ctx, field)
+	defer func() { ec.Tracer.EndFieldExecution(ctx) }()
+	rctx := &graphql.ResolverContext{
+		Object:   "Mutation",
+		Field:    field,
+		Args:     nil,
+		IsMethod: true,
+	}
+	ctx = graphql.WithResolverContext(ctx, rctx)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_updateOrInsertProfileViewingInfo_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	rctx.Args = args
+	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
+	resTmp := ec.FieldMiddleware(ctx, nil, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().UpdateOrInsertProfileViewingInfo(rctx, args["input"].(ProfileViewingInfoInput))
+	})
+	if resTmp == nil {
+		if !ec.HasError(rctx) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*ProfileViewingInfo)
+	rctx.Result = res
+	ctx = ec.Tracer.StartFieldChildExecution(ctx)
+	return ec.marshalNProfileViewingInfo2ᚖgithubᚗcomᚋNovakovIKᚋflexᚐProfileViewingInfo(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Profile_id(ctx context.Context, field graphql.CollectedField, obj *Profile) graphql.Marshaler {
@@ -1669,6 +1895,42 @@ func (ec *executionContext) ___Type_ofType(ctx context.Context, field graphql.Co
 
 // region    **************************** input.gotpl *****************************
 
+func (ec *executionContext) unmarshalInputProfileViewingInfoInput(ctx context.Context, v interface{}) (ProfileViewingInfoInput, error) {
+	var it ProfileViewingInfoInput
+	var asMap = v.(map[string]interface{})
+
+	for k, v := range asMap {
+		switch k {
+		case "media_id":
+			var err error
+			it.MediaID, err = ec.unmarshalNInt2int(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "profile_id":
+			var err error
+			it.ProfileID, err = ec.unmarshalNInt2int(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "time_point":
+			var err error
+			it.TimePoint, err = ec.unmarshalNInt2int(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "timestamp":
+			var err error
+			it.Timestamp, err = ec.unmarshalNInt2int(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
 // endregion **************************** input.gotpl *****************************
 
 // region    ************************** interface.gotpl ***************************
@@ -1710,6 +1972,47 @@ func (ec *executionContext) _Media(ctx context.Context, sel ast.SelectionSet, ob
 			}
 		case "status":
 			out.Values[i] = ec._Media_status(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
+var mutationImplementors = []string{"Mutation"}
+
+func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.RequestContext, sel, mutationImplementors)
+
+	ctx = graphql.WithResolverContext(ctx, &graphql.ResolverContext{
+		Object: "Mutation",
+	})
+
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("Mutation")
+		case "newProfile":
+			out.Values[i] = ec._Mutation_newProfile(ctx, field)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "updateProfile":
+			out.Values[i] = ec._Mutation_updateProfile(ctx, field)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "updateOrInsertProfileViewingInfo":
+			out.Values[i] = ec._Mutation_updateOrInsertProfileViewingInfo(ctx, field)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
@@ -2174,6 +2477,10 @@ func (ec *executionContext) marshalNProfileViewingInfo2ᚖgithubᚗcomᚋNovakov
 		return graphql.Null
 	}
 	return ec._ProfileViewingInfo(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalNProfileViewingInfoInput2githubᚗcomᚋNovakovIKᚋflexᚐProfileViewingInfoInput(ctx context.Context, v interface{}) (ProfileViewingInfoInput, error) {
+	return ec.unmarshalInputProfileViewingInfoInput(ctx, v)
 }
 
 func (ec *executionContext) unmarshalNString2string(ctx context.Context, v interface{}) (string, error) {

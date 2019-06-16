@@ -12,14 +12,27 @@ type Profile {
 }
 
 type ProfileViewingInfo{
-    media_id: Int!
+    media_id:   Int!
     profile_id: Int!
     time_point: Int!
-    timestamp: Int!
+    timestamp:  Int!
+}
+
+input ProfileViewingInfoInput{
+    media_id:   Int!
+    profile_id: Int!
+    time_point: Int!
+    timestamp:  Int!
 }
 
 type Query {
     media(id: Int): [Media!]
     profiles(id: Int): [Profile!]
     viewing_info(media_id: Int, profile_id: Int): [ProfileViewingInfo!]
+}
+
+type Mutation {
+    newProfile(name: String!): Profile!
+    updateProfile(id: Int!, new_name: String!): Profile!
+    updateOrInsertProfileViewingInfo(input: ProfileViewingInfoInput!): ProfileViewingInfo!
 }

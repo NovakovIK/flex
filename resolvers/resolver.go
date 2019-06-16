@@ -18,14 +18,19 @@ func (r *Resolver) Query() flex.QueryResolver {
 	return &queryResolver{r}
 }
 
+func (r *Resolver) Mutation() flex.MutationResolver {
+	return &mutationResolver{r}
+}
+
 type queryResolver struct{ *Resolver }
+type mutationResolver struct{ *Resolver }
 
 func (r *queryResolver) Media(ctx context.Context, id *int) ([]*flex.Media, error) {
 	var data []storage.Media
 	var err error
 
 	if id != nil {
-		data, err = r.storage.MediaDAO.FetchByID(int64(*id))
+		data, err = r.storage.MediaDAO.FetchByID(*id)
 	} else {
 		data, err = r.storage.MediaDAO.FetchAll()
 	}
@@ -38,10 +43,10 @@ func (r *queryResolver) Media(ctx context.Context, id *int) ([]*flex.Media, erro
 	for i := range data {
 		d := &data[i]
 		media = append(media, &flex.Media{
-			ID:           int(d.ID),
+			ID:           d.ID,
 			Name:         d.Name,
-			Duration:     int(d.Duration),
-			LastModified: int(d.LastModified),
+			Duration:     d.Duration,
+			LastModified: d.LastModified,
 			Status:       d.Status.String(),
 		})
 	}
@@ -53,7 +58,7 @@ func (r *queryResolver) Profiles(ctx context.Context, id *int) ([]*flex.Profile,
 	var err error
 
 	if id != nil {
-		data, err = r.storage.ProfileDAO.FetchByID(int64(*id))
+		data, err = r.storage.ProfileDAO.FetchByID(*id)
 	} else {
 		data, err = r.storage.ProfileDAO.FetchAll()
 	}
@@ -66,7 +71,7 @@ func (r *queryResolver) Profiles(ctx context.Context, id *int) ([]*flex.Profile,
 	for i := range data {
 		d := &data[i]
 		profiles = append(profiles, &flex.Profile{
-			ID:   int(d.ID),
+			ID:   d.ID,
 			Name: d.Name,
 		})
 	}
@@ -78,11 +83,11 @@ func (r *queryResolver) ViewingInfo(ctx context.Context, mediaID *int, profileID
 	var err error
 
 	if mediaID != nil && profileID != nil {
-		data, err = r.storage.ProfileViewingInfoDAO.FetchByMediaIDAndProfileID(int64(*mediaID), int64(*profileID))
+		data, err = r.storage.ProfileViewingInfoDAO.FetchByMediaIDAndProfileID(*mediaID, *profileID)
 	} else if mediaID != nil {
-		data, err = r.storage.ProfileViewingInfoDAO.FetchByMediaID(int64(*mediaID))
+		data, err = r.storage.ProfileViewingInfoDAO.FetchByMediaID(*mediaID)
 	} else if profileID != nil {
-		data, err = r.storage.ProfileViewingInfoDAO.FetchByProfileID(int64(*profileID))
+		data, err = r.storage.ProfileViewingInfoDAO.FetchByProfileID(*profileID)
 	} else {
 		data, err = r.storage.ProfileViewingInfoDAO.FetchAll()
 	}
@@ -94,12 +99,38 @@ func (r *queryResolver) ViewingInfo(ctx context.Context, mediaID *int, profileID
 	for i := range data {
 		d := &data[i]
 		viewingInfo = append(viewingInfo, &flex.ProfileViewingInfo{
-			MediaID:   int(d.MediaID),
-			ProfileID: int(d.ProfileID),
-			TimePoint: int(d.ProfileID),
-			Timestamp: int(d.Timestamp),
+			MediaID:   d.MediaID,
+			ProfileID: d.ProfileID,
+			TimePoint: d.ProfileID,
+			Timestamp: d.Timestamp,
 		})
 	}
 
 	return viewingInfo, nil
+}
+
+func (r *mutationResolver) NewProfile(ctx context.Context, name string) (*flex.Profile, error) {
+	profile, err := r.storage.ProfileDAO.New(name)
+	if err != nil {
+		return nil, err
+	}
+	return &flex.Profile{
+		ID:   profile.ID,
+		Name: profile.Name,
+	}, nil
+}
+
+func (r *mutationResolver) UpdateProfile(ctx context.Context, id int, newName string) (*flex.Profile, error) {
+	profile, err := r.storage.ProfileDAO.Update(id, newName)
+	if err != nil {
+		return nil, err
+	}
+	return &flex.Profile{
+		ID:   profile.ID,
+		Name: profile.Name,
+	}, nil
+}
+
+func (r *mutationResolver) UpdateOrInsertProfileViewingInfo(ctx context.Context, input flex.ProfileViewingInfoInput) (*flex.ProfileViewingInfo, error) {
+	panic("not implemented")
 }
