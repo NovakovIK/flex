@@ -5,18 +5,26 @@ import (
 	"github.com/99designs/gqlgen/handler"
 	"github.com/NovakovIK/flex"
 	"github.com/NovakovIK/flex/resolvers"
+	"github.com/NovakovIK/flex/scanner"
 	"github.com/NovakovIK/flex/storage"
 	"github.com/gorilla/mux"
 	log "github.com/sirupsen/logrus"
 	"net/http"
 	"os"
 	"os/signal"
+	"path"
 	"syscall"
 )
 
 func main() {
-	router := mux.NewRouter()
 	s := storage.NewStorage()
+
+	scan := scanner.NewScanner(s, path.Join(os.Getenv("HOME"), "/Videos"))
+	sync := scanner.NewSyncUtil(s, scan)
+	go scan.Scan()
+	go sync.Start()
+
+	router := mux.NewRouter()
 	router.Handle("/", handler.Playground("GraphQL playground", "/query"))
 	router.Handle("/query", handler.GraphQL(flex.NewExecutableSchema(flex.Config{Resolvers: resolvers.NewResolver(s)})))
 

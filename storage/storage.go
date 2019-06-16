@@ -103,6 +103,17 @@ func (d *MediaDAO) FetchByID(id int64) ([]Media, error) {
 	}
 	return media, nil
 }
+func (d MediaDAO) Insert(media Media) error {
+	_, err := d.DB.Exec(
+		"insert into media(MediaName, Path, Duration, LastModified, Status) VALUES ($1, $2, $3, $4, $5)",
+		media.Name, media.Path, media.Duration, media.LastModified, media.Status,
+		)
+	return err
+}
+func (d MediaDAO) DeleteByPath(path string) error {
+	_, err := d.DB.Exec("DELETE FROM media WHERE Path = $1", path)
+	return err
+}
 
 func (d *ProfileDAO) FetchAll() ([]Profile, error) {
 	profiles := make([]Profile, 0)
