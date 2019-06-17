@@ -42,47 +42,30 @@ type DirectiveRoot struct {
 
 type ComplexityRoot struct {
 	Media struct {
-		Duration     func(childComplexity int) int
-		ID           func(childComplexity int) int
-		LastModified func(childComplexity int) int
-		Name         func(childComplexity int) int
-		Status       func(childComplexity int) int
+		Created   func(childComplexity int) int
+		Duration  func(childComplexity int) int
+		ID        func(childComplexity int) int
+		LastSeen  func(childComplexity int) int
+		Name      func(childComplexity int) int
+		Path      func(childComplexity int) int
+		Status    func(childComplexity int) int
+		TimePoint func(childComplexity int) int
 	}
 
 	Mutation struct {
-		NewProfile                       func(childComplexity int, name string) int
-		UpdateOrInsertProfileViewingInfo func(childComplexity int, input ProfileViewingInfoInput) int
-		UpdateProfile                    func(childComplexity int, id int, newName string) int
-	}
-
-	Profile struct {
-		ID   func(childComplexity int) int
-		Name func(childComplexity int) int
-	}
-
-	ProfileViewingInfo struct {
-		MediaID   func(childComplexity int) int
-		ProfileID func(childComplexity int) int
-		TimePoint func(childComplexity int) int
-		Timestamp func(childComplexity int) int
+		UpdateMedia func(childComplexity int, input MediaInput) int
 	}
 
 	Query struct {
-		Media       func(childComplexity int, id *int) int
-		Profiles    func(childComplexity int, id *int) int
-		ViewingInfo func(childComplexity int, mediaID *int, profileID *int) int
+		Media func(childComplexity int, id *int) int
 	}
 }
 
 type MutationResolver interface {
-	NewProfile(ctx context.Context, name string) (*Profile, error)
-	UpdateProfile(ctx context.Context, id int, newName string) (*Profile, error)
-	UpdateOrInsertProfileViewingInfo(ctx context.Context, input ProfileViewingInfoInput) (*ProfileViewingInfo, error)
+	UpdateMedia(ctx context.Context, input MediaInput) (*Media, error)
 }
 type QueryResolver interface {
 	Media(ctx context.Context, id *int) ([]*Media, error)
-	Profiles(ctx context.Context, id *int) ([]*Profile, error)
-	ViewingInfo(ctx context.Context, mediaID *int, profileID *int) ([]*ProfileViewingInfo, error)
 }
 
 type executableSchema struct {
@@ -100,6 +83,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 	_ = ec
 	switch typeName + "." + field {
 
+	case "Media.created":
+		if e.complexity.Media.Created == nil {
+			break
+		}
+
+		return e.complexity.Media.Created(childComplexity), true
+
 	case "Media.duration":
 		if e.complexity.Media.Duration == nil {
 			break
@@ -114,12 +104,12 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Media.ID(childComplexity), true
 
-	case "Media.last_modified":
-		if e.complexity.Media.LastModified == nil {
+	case "Media.last_seen":
+		if e.complexity.Media.LastSeen == nil {
 			break
 		}
 
-		return e.complexity.Media.LastModified(childComplexity), true
+		return e.complexity.Media.LastSeen(childComplexity), true
 
 	case "Media.name":
 		if e.complexity.Media.Name == nil {
@@ -128,6 +118,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Media.Name(childComplexity), true
 
+	case "Media.path":
+		if e.complexity.Media.Path == nil {
+			break
+		}
+
+		return e.complexity.Media.Path(childComplexity), true
+
 	case "Media.status":
 		if e.complexity.Media.Status == nil {
 			break
@@ -135,83 +132,24 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Media.Status(childComplexity), true
 
-	case "Mutation.newProfile":
-		if e.complexity.Mutation.NewProfile == nil {
+	case "Media.time_point":
+		if e.complexity.Media.TimePoint == nil {
 			break
 		}
 
-		args, err := ec.field_Mutation_newProfile_args(context.TODO(), rawArgs)
+		return e.complexity.Media.TimePoint(childComplexity), true
+
+	case "Mutation.updateMedia":
+		if e.complexity.Mutation.UpdateMedia == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_updateMedia_args(context.TODO(), rawArgs)
 		if err != nil {
 			return 0, false
 		}
 
-		return e.complexity.Mutation.NewProfile(childComplexity, args["name"].(string)), true
-
-	case "Mutation.updateOrInsertProfileViewingInfo":
-		if e.complexity.Mutation.UpdateOrInsertProfileViewingInfo == nil {
-			break
-		}
-
-		args, err := ec.field_Mutation_updateOrInsertProfileViewingInfo_args(context.TODO(), rawArgs)
-		if err != nil {
-			return 0, false
-		}
-
-		return e.complexity.Mutation.UpdateOrInsertProfileViewingInfo(childComplexity, args["input"].(ProfileViewingInfoInput)), true
-
-	case "Mutation.updateProfile":
-		if e.complexity.Mutation.UpdateProfile == nil {
-			break
-		}
-
-		args, err := ec.field_Mutation_updateProfile_args(context.TODO(), rawArgs)
-		if err != nil {
-			return 0, false
-		}
-
-		return e.complexity.Mutation.UpdateProfile(childComplexity, args["id"].(int), args["new_name"].(string)), true
-
-	case "Profile.id":
-		if e.complexity.Profile.ID == nil {
-			break
-		}
-
-		return e.complexity.Profile.ID(childComplexity), true
-
-	case "Profile.name":
-		if e.complexity.Profile.Name == nil {
-			break
-		}
-
-		return e.complexity.Profile.Name(childComplexity), true
-
-	case "ProfileViewingInfo.media_id":
-		if e.complexity.ProfileViewingInfo.MediaID == nil {
-			break
-		}
-
-		return e.complexity.ProfileViewingInfo.MediaID(childComplexity), true
-
-	case "ProfileViewingInfo.profile_id":
-		if e.complexity.ProfileViewingInfo.ProfileID == nil {
-			break
-		}
-
-		return e.complexity.ProfileViewingInfo.ProfileID(childComplexity), true
-
-	case "ProfileViewingInfo.time_point":
-		if e.complexity.ProfileViewingInfo.TimePoint == nil {
-			break
-		}
-
-		return e.complexity.ProfileViewingInfo.TimePoint(childComplexity), true
-
-	case "ProfileViewingInfo.timestamp":
-		if e.complexity.ProfileViewingInfo.Timestamp == nil {
-			break
-		}
-
-		return e.complexity.ProfileViewingInfo.Timestamp(childComplexity), true
+		return e.complexity.Mutation.UpdateMedia(childComplexity, args["input"].(MediaInput)), true
 
 	case "Query.media":
 		if e.complexity.Query.Media == nil {
@@ -224,30 +162,6 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Query.Media(childComplexity, args["id"].(*int)), true
-
-	case "Query.profiles":
-		if e.complexity.Query.Profiles == nil {
-			break
-		}
-
-		args, err := ec.field_Query_profiles_args(context.TODO(), rawArgs)
-		if err != nil {
-			return 0, false
-		}
-
-		return e.complexity.Query.Profiles(childComplexity, args["id"].(*int)), true
-
-	case "Query.viewing_info":
-		if e.complexity.Query.ViewingInfo == nil {
-			break
-		}
-
-		args, err := ec.field_Query_viewing_info_args(context.TODO(), rawArgs)
-		if err != nil {
-			return 0, false
-		}
-
-		return e.complexity.Query.ViewingInfo(childComplexity, args["media_id"].(*int), args["profile_id"].(*int)), true
 
 	}
 	return 0, false
@@ -327,42 +241,29 @@ func (ec *executionContext) introspectType(name string) (*introspection.Type, er
 
 var parsedSchema = gqlparser.MustLoadSchema(
 	&ast.Source{Name: "schema.graphql", Input: `type Media {
-    id:             Int!
-    name:           String!
-    duration:       Int!
-    last_modified:  Int!
-    status:         String!
+    id: Int!
+    name: String!
+    path: String!
+    duration: Int!,
+    created: Int!,
+    status: String!,
+    time_point: Int!,
+    last_seen: Int!
 }
 
-type Profile {
-    id:     Int!
-    name:   String!
-}
-
-type ProfileViewingInfo{
-    media_id:   Int!
-    profile_id: Int!
-    time_point: Int!
-    timestamp:  Int!
-}
-
-input ProfileViewingInfoInput{
-    media_id:   Int!
-    profile_id: Int!
-    time_point: Int!
-    timestamp:  Int!
+input MediaInput {
+    id: Int!
+    name: String!
+    time_point: Int!,
+    last_seen: Int!
 }
 
 type Query {
     media(id: Int): [Media!]
-    profiles(id: Int): [Profile!]
-    viewing_info(media_id: Int, profile_id: Int): [ProfileViewingInfo!]
 }
 
 type Mutation {
-    newProfile(name: String!): Profile!
-    updateProfile(id: Int!, new_name: String!): Profile!
-    updateOrInsertProfileViewingInfo(input: ProfileViewingInfoInput!): ProfileViewingInfo!
+    updateMedia(input: MediaInput!): Media!
 }
 `},
 )
@@ -371,53 +272,17 @@ type Mutation {
 
 // region    ***************************** args.gotpl *****************************
 
-func (ec *executionContext) field_Mutation_newProfile_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+func (ec *executionContext) field_Mutation_updateMedia_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
-	var arg0 string
-	if tmp, ok := rawArgs["name"]; ok {
-		arg0, err = ec.unmarshalNString2string(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["name"] = arg0
-	return args, nil
-}
-
-func (ec *executionContext) field_Mutation_updateOrInsertProfileViewingInfo_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
-	var err error
-	args := map[string]interface{}{}
-	var arg0 ProfileViewingInfoInput
+	var arg0 MediaInput
 	if tmp, ok := rawArgs["input"]; ok {
-		arg0, err = ec.unmarshalNProfileViewingInfoInput2githubᚗcomᚋNovakovIKᚋflexᚐProfileViewingInfoInput(ctx, tmp)
+		arg0, err = ec.unmarshalNMediaInput2githubᚗcomᚋNovakovIKᚋflexᚐMediaInput(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
 	}
 	args["input"] = arg0
-	return args, nil
-}
-
-func (ec *executionContext) field_Mutation_updateProfile_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
-	var err error
-	args := map[string]interface{}{}
-	var arg0 int
-	if tmp, ok := rawArgs["id"]; ok {
-		arg0, err = ec.unmarshalNInt2int(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["id"] = arg0
-	var arg1 string
-	if tmp, ok := rawArgs["new_name"]; ok {
-		arg1, err = ec.unmarshalNString2string(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["new_name"] = arg1
 	return args, nil
 }
 
@@ -446,42 +311,6 @@ func (ec *executionContext) field_Query_media_args(ctx context.Context, rawArgs 
 		}
 	}
 	args["id"] = arg0
-	return args, nil
-}
-
-func (ec *executionContext) field_Query_profiles_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
-	var err error
-	args := map[string]interface{}{}
-	var arg0 *int
-	if tmp, ok := rawArgs["id"]; ok {
-		arg0, err = ec.unmarshalOInt2ᚖint(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["id"] = arg0
-	return args, nil
-}
-
-func (ec *executionContext) field_Query_viewing_info_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
-	var err error
-	args := map[string]interface{}{}
-	var arg0 *int
-	if tmp, ok := rawArgs["media_id"]; ok {
-		arg0, err = ec.unmarshalOInt2ᚖint(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["media_id"] = arg0
-	var arg1 *int
-	if tmp, ok := rawArgs["profile_id"]; ok {
-		arg1, err = ec.unmarshalOInt2ᚖint(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["profile_id"] = arg1
 	return args, nil
 }
 
@@ -571,6 +400,33 @@ func (ec *executionContext) _Media_name(ctx context.Context, field graphql.Colle
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
+func (ec *executionContext) _Media_path(ctx context.Context, field graphql.CollectedField, obj *Media) graphql.Marshaler {
+	ctx = ec.Tracer.StartFieldExecution(ctx, field)
+	defer func() { ec.Tracer.EndFieldExecution(ctx) }()
+	rctx := &graphql.ResolverContext{
+		Object:   "Media",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+	ctx = graphql.WithResolverContext(ctx, rctx)
+	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
+	resTmp := ec.FieldMiddleware(ctx, obj, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Path, nil
+	})
+	if resTmp == nil {
+		if !ec.HasError(rctx) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	rctx.Result = res
+	ctx = ec.Tracer.StartFieldChildExecution(ctx)
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
 func (ec *executionContext) _Media_duration(ctx context.Context, field graphql.CollectedField, obj *Media) graphql.Marshaler {
 	ctx = ec.Tracer.StartFieldExecution(ctx, field)
 	defer func() { ec.Tracer.EndFieldExecution(ctx) }()
@@ -598,7 +454,7 @@ func (ec *executionContext) _Media_duration(ctx context.Context, field graphql.C
 	return ec.marshalNInt2int(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Media_last_modified(ctx context.Context, field graphql.CollectedField, obj *Media) graphql.Marshaler {
+func (ec *executionContext) _Media_created(ctx context.Context, field graphql.CollectedField, obj *Media) graphql.Marshaler {
 	ctx = ec.Tracer.StartFieldExecution(ctx, field)
 	defer func() { ec.Tracer.EndFieldExecution(ctx) }()
 	rctx := &graphql.ResolverContext{
@@ -611,7 +467,7 @@ func (ec *executionContext) _Media_last_modified(ctx context.Context, field grap
 	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
 	resTmp := ec.FieldMiddleware(ctx, obj, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.LastModified, nil
+		return obj.Created, nil
 	})
 	if resTmp == nil {
 		if !ec.HasError(rctx) {
@@ -652,221 +508,11 @@ func (ec *executionContext) _Media_status(ctx context.Context, field graphql.Col
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Mutation_newProfile(ctx context.Context, field graphql.CollectedField) graphql.Marshaler {
+func (ec *executionContext) _Media_time_point(ctx context.Context, field graphql.CollectedField, obj *Media) graphql.Marshaler {
 	ctx = ec.Tracer.StartFieldExecution(ctx, field)
 	defer func() { ec.Tracer.EndFieldExecution(ctx) }()
 	rctx := &graphql.ResolverContext{
-		Object:   "Mutation",
-		Field:    field,
-		Args:     nil,
-		IsMethod: true,
-	}
-	ctx = graphql.WithResolverContext(ctx, rctx)
-	rawArgs := field.ArgumentMap(ec.Variables)
-	args, err := ec.field_Mutation_newProfile_args(ctx, rawArgs)
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	rctx.Args = args
-	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
-	resTmp := ec.FieldMiddleware(ctx, nil, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().NewProfile(rctx, args["name"].(string))
-	})
-	if resTmp == nil {
-		if !ec.HasError(rctx) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(*Profile)
-	rctx.Result = res
-	ctx = ec.Tracer.StartFieldChildExecution(ctx)
-	return ec.marshalNProfile2ᚖgithubᚗcomᚋNovakovIKᚋflexᚐProfile(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) _Mutation_updateProfile(ctx context.Context, field graphql.CollectedField) graphql.Marshaler {
-	ctx = ec.Tracer.StartFieldExecution(ctx, field)
-	defer func() { ec.Tracer.EndFieldExecution(ctx) }()
-	rctx := &graphql.ResolverContext{
-		Object:   "Mutation",
-		Field:    field,
-		Args:     nil,
-		IsMethod: true,
-	}
-	ctx = graphql.WithResolverContext(ctx, rctx)
-	rawArgs := field.ArgumentMap(ec.Variables)
-	args, err := ec.field_Mutation_updateProfile_args(ctx, rawArgs)
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	rctx.Args = args
-	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
-	resTmp := ec.FieldMiddleware(ctx, nil, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().UpdateProfile(rctx, args["id"].(int), args["new_name"].(string))
-	})
-	if resTmp == nil {
-		if !ec.HasError(rctx) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(*Profile)
-	rctx.Result = res
-	ctx = ec.Tracer.StartFieldChildExecution(ctx)
-	return ec.marshalNProfile2ᚖgithubᚗcomᚋNovakovIKᚋflexᚐProfile(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) _Mutation_updateOrInsertProfileViewingInfo(ctx context.Context, field graphql.CollectedField) graphql.Marshaler {
-	ctx = ec.Tracer.StartFieldExecution(ctx, field)
-	defer func() { ec.Tracer.EndFieldExecution(ctx) }()
-	rctx := &graphql.ResolverContext{
-		Object:   "Mutation",
-		Field:    field,
-		Args:     nil,
-		IsMethod: true,
-	}
-	ctx = graphql.WithResolverContext(ctx, rctx)
-	rawArgs := field.ArgumentMap(ec.Variables)
-	args, err := ec.field_Mutation_updateOrInsertProfileViewingInfo_args(ctx, rawArgs)
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	rctx.Args = args
-	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
-	resTmp := ec.FieldMiddleware(ctx, nil, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().UpdateOrInsertProfileViewingInfo(rctx, args["input"].(ProfileViewingInfoInput))
-	})
-	if resTmp == nil {
-		if !ec.HasError(rctx) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(*ProfileViewingInfo)
-	rctx.Result = res
-	ctx = ec.Tracer.StartFieldChildExecution(ctx)
-	return ec.marshalNProfileViewingInfo2ᚖgithubᚗcomᚋNovakovIKᚋflexᚐProfileViewingInfo(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) _Profile_id(ctx context.Context, field graphql.CollectedField, obj *Profile) graphql.Marshaler {
-	ctx = ec.Tracer.StartFieldExecution(ctx, field)
-	defer func() { ec.Tracer.EndFieldExecution(ctx) }()
-	rctx := &graphql.ResolverContext{
-		Object:   "Profile",
-		Field:    field,
-		Args:     nil,
-		IsMethod: false,
-	}
-	ctx = graphql.WithResolverContext(ctx, rctx)
-	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
-	resTmp := ec.FieldMiddleware(ctx, obj, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.ID, nil
-	})
-	if resTmp == nil {
-		if !ec.HasError(rctx) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(int)
-	rctx.Result = res
-	ctx = ec.Tracer.StartFieldChildExecution(ctx)
-	return ec.marshalNInt2int(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) _Profile_name(ctx context.Context, field graphql.CollectedField, obj *Profile) graphql.Marshaler {
-	ctx = ec.Tracer.StartFieldExecution(ctx, field)
-	defer func() { ec.Tracer.EndFieldExecution(ctx) }()
-	rctx := &graphql.ResolverContext{
-		Object:   "Profile",
-		Field:    field,
-		Args:     nil,
-		IsMethod: false,
-	}
-	ctx = graphql.WithResolverContext(ctx, rctx)
-	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
-	resTmp := ec.FieldMiddleware(ctx, obj, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.Name, nil
-	})
-	if resTmp == nil {
-		if !ec.HasError(rctx) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(string)
-	rctx.Result = res
-	ctx = ec.Tracer.StartFieldChildExecution(ctx)
-	return ec.marshalNString2string(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) _ProfileViewingInfo_media_id(ctx context.Context, field graphql.CollectedField, obj *ProfileViewingInfo) graphql.Marshaler {
-	ctx = ec.Tracer.StartFieldExecution(ctx, field)
-	defer func() { ec.Tracer.EndFieldExecution(ctx) }()
-	rctx := &graphql.ResolverContext{
-		Object:   "ProfileViewingInfo",
-		Field:    field,
-		Args:     nil,
-		IsMethod: false,
-	}
-	ctx = graphql.WithResolverContext(ctx, rctx)
-	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
-	resTmp := ec.FieldMiddleware(ctx, obj, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.MediaID, nil
-	})
-	if resTmp == nil {
-		if !ec.HasError(rctx) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(int)
-	rctx.Result = res
-	ctx = ec.Tracer.StartFieldChildExecution(ctx)
-	return ec.marshalNInt2int(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) _ProfileViewingInfo_profile_id(ctx context.Context, field graphql.CollectedField, obj *ProfileViewingInfo) graphql.Marshaler {
-	ctx = ec.Tracer.StartFieldExecution(ctx, field)
-	defer func() { ec.Tracer.EndFieldExecution(ctx) }()
-	rctx := &graphql.ResolverContext{
-		Object:   "ProfileViewingInfo",
-		Field:    field,
-		Args:     nil,
-		IsMethod: false,
-	}
-	ctx = graphql.WithResolverContext(ctx, rctx)
-	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
-	resTmp := ec.FieldMiddleware(ctx, obj, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.ProfileID, nil
-	})
-	if resTmp == nil {
-		if !ec.HasError(rctx) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(int)
-	rctx.Result = res
-	ctx = ec.Tracer.StartFieldChildExecution(ctx)
-	return ec.marshalNInt2int(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) _ProfileViewingInfo_time_point(ctx context.Context, field graphql.CollectedField, obj *ProfileViewingInfo) graphql.Marshaler {
-	ctx = ec.Tracer.StartFieldExecution(ctx, field)
-	defer func() { ec.Tracer.EndFieldExecution(ctx) }()
-	rctx := &graphql.ResolverContext{
-		Object:   "ProfileViewingInfo",
+		Object:   "Media",
 		Field:    field,
 		Args:     nil,
 		IsMethod: false,
@@ -889,11 +535,11 @@ func (ec *executionContext) _ProfileViewingInfo_time_point(ctx context.Context, 
 	return ec.marshalNInt2int(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _ProfileViewingInfo_timestamp(ctx context.Context, field graphql.CollectedField, obj *ProfileViewingInfo) graphql.Marshaler {
+func (ec *executionContext) _Media_last_seen(ctx context.Context, field graphql.CollectedField, obj *Media) graphql.Marshaler {
 	ctx = ec.Tracer.StartFieldExecution(ctx, field)
 	defer func() { ec.Tracer.EndFieldExecution(ctx) }()
 	rctx := &graphql.ResolverContext{
-		Object:   "ProfileViewingInfo",
+		Object:   "Media",
 		Field:    field,
 		Args:     nil,
 		IsMethod: false,
@@ -902,7 +548,7 @@ func (ec *executionContext) _ProfileViewingInfo_timestamp(ctx context.Context, f
 	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
 	resTmp := ec.FieldMiddleware(ctx, obj, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.Timestamp, nil
+		return obj.LastSeen, nil
 	})
 	if resTmp == nil {
 		if !ec.HasError(rctx) {
@@ -914,6 +560,40 @@ func (ec *executionContext) _ProfileViewingInfo_timestamp(ctx context.Context, f
 	rctx.Result = res
 	ctx = ec.Tracer.StartFieldChildExecution(ctx)
 	return ec.marshalNInt2int(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Mutation_updateMedia(ctx context.Context, field graphql.CollectedField) graphql.Marshaler {
+	ctx = ec.Tracer.StartFieldExecution(ctx, field)
+	defer func() { ec.Tracer.EndFieldExecution(ctx) }()
+	rctx := &graphql.ResolverContext{
+		Object:   "Mutation",
+		Field:    field,
+		Args:     nil,
+		IsMethod: true,
+	}
+	ctx = graphql.WithResolverContext(ctx, rctx)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_updateMedia_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	rctx.Args = args
+	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
+	resTmp := ec.FieldMiddleware(ctx, nil, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().UpdateMedia(rctx, args["input"].(MediaInput))
+	})
+	if resTmp == nil {
+		if !ec.HasError(rctx) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*Media)
+	rctx.Result = res
+	ctx = ec.Tracer.StartFieldChildExecution(ctx)
+	return ec.marshalNMedia2ᚖgithubᚗcomᚋNovakovIKᚋflexᚐMedia(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Query_media(ctx context.Context, field graphql.CollectedField) graphql.Marshaler {
@@ -945,68 +625,6 @@ func (ec *executionContext) _Query_media(ctx context.Context, field graphql.Coll
 	rctx.Result = res
 	ctx = ec.Tracer.StartFieldChildExecution(ctx)
 	return ec.marshalOMedia2ᚕᚖgithubᚗcomᚋNovakovIKᚋflexᚐMedia(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) _Query_profiles(ctx context.Context, field graphql.CollectedField) graphql.Marshaler {
-	ctx = ec.Tracer.StartFieldExecution(ctx, field)
-	defer func() { ec.Tracer.EndFieldExecution(ctx) }()
-	rctx := &graphql.ResolverContext{
-		Object:   "Query",
-		Field:    field,
-		Args:     nil,
-		IsMethod: true,
-	}
-	ctx = graphql.WithResolverContext(ctx, rctx)
-	rawArgs := field.ArgumentMap(ec.Variables)
-	args, err := ec.field_Query_profiles_args(ctx, rawArgs)
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	rctx.Args = args
-	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
-	resTmp := ec.FieldMiddleware(ctx, nil, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().Profiles(rctx, args["id"].(*int))
-	})
-	if resTmp == nil {
-		return graphql.Null
-	}
-	res := resTmp.([]*Profile)
-	rctx.Result = res
-	ctx = ec.Tracer.StartFieldChildExecution(ctx)
-	return ec.marshalOProfile2ᚕᚖgithubᚗcomᚋNovakovIKᚋflexᚐProfile(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) _Query_viewing_info(ctx context.Context, field graphql.CollectedField) graphql.Marshaler {
-	ctx = ec.Tracer.StartFieldExecution(ctx, field)
-	defer func() { ec.Tracer.EndFieldExecution(ctx) }()
-	rctx := &graphql.ResolverContext{
-		Object:   "Query",
-		Field:    field,
-		Args:     nil,
-		IsMethod: true,
-	}
-	ctx = graphql.WithResolverContext(ctx, rctx)
-	rawArgs := field.ArgumentMap(ec.Variables)
-	args, err := ec.field_Query_viewing_info_args(ctx, rawArgs)
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	rctx.Args = args
-	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
-	resTmp := ec.FieldMiddleware(ctx, nil, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().ViewingInfo(rctx, args["media_id"].(*int), args["profile_id"].(*int))
-	})
-	if resTmp == nil {
-		return graphql.Null
-	}
-	res := resTmp.([]*ProfileViewingInfo)
-	rctx.Result = res
-	ctx = ec.Tracer.StartFieldChildExecution(ctx)
-	return ec.marshalOProfileViewingInfo2ᚕᚖgithubᚗcomᚋNovakovIKᚋflexᚐProfileViewingInfo(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Query___type(ctx context.Context, field graphql.CollectedField) graphql.Marshaler {
@@ -1895,21 +1513,21 @@ func (ec *executionContext) ___Type_ofType(ctx context.Context, field graphql.Co
 
 // region    **************************** input.gotpl *****************************
 
-func (ec *executionContext) unmarshalInputProfileViewingInfoInput(ctx context.Context, v interface{}) (ProfileViewingInfoInput, error) {
-	var it ProfileViewingInfoInput
+func (ec *executionContext) unmarshalInputMediaInput(ctx context.Context, v interface{}) (MediaInput, error) {
+	var it MediaInput
 	var asMap = v.(map[string]interface{})
 
 	for k, v := range asMap {
 		switch k {
-		case "media_id":
+		case "id":
 			var err error
-			it.MediaID, err = ec.unmarshalNInt2int(ctx, v)
+			it.ID, err = ec.unmarshalNInt2int(ctx, v)
 			if err != nil {
 				return it, err
 			}
-		case "profile_id":
+		case "name":
 			var err error
-			it.ProfileID, err = ec.unmarshalNInt2int(ctx, v)
+			it.Name, err = ec.unmarshalNString2string(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -1919,9 +1537,9 @@ func (ec *executionContext) unmarshalInputProfileViewingInfoInput(ctx context.Co
 			if err != nil {
 				return it, err
 			}
-		case "timestamp":
+		case "last_seen":
 			var err error
-			it.Timestamp, err = ec.unmarshalNInt2int(ctx, v)
+			it.LastSeen, err = ec.unmarshalNInt2int(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -1960,18 +1578,33 @@ func (ec *executionContext) _Media(ctx context.Context, sel ast.SelectionSet, ob
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
+		case "path":
+			out.Values[i] = ec._Media_path(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
 		case "duration":
 			out.Values[i] = ec._Media_duration(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
-		case "last_modified":
-			out.Values[i] = ec._Media_last_modified(ctx, field, obj)
+		case "created":
+			out.Values[i] = ec._Media_created(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
 		case "status":
 			out.Values[i] = ec._Media_status(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "time_point":
+			out.Values[i] = ec._Media_time_point(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "last_seen":
+			out.Values[i] = ec._Media_last_seen(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
@@ -2001,92 +1634,8 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 		switch field.Name {
 		case "__typename":
 			out.Values[i] = graphql.MarshalString("Mutation")
-		case "newProfile":
-			out.Values[i] = ec._Mutation_newProfile(ctx, field)
-			if out.Values[i] == graphql.Null {
-				invalids++
-			}
-		case "updateProfile":
-			out.Values[i] = ec._Mutation_updateProfile(ctx, field)
-			if out.Values[i] == graphql.Null {
-				invalids++
-			}
-		case "updateOrInsertProfileViewingInfo":
-			out.Values[i] = ec._Mutation_updateOrInsertProfileViewingInfo(ctx, field)
-			if out.Values[i] == graphql.Null {
-				invalids++
-			}
-		default:
-			panic("unknown field " + strconv.Quote(field.Name))
-		}
-	}
-	out.Dispatch()
-	if invalids > 0 {
-		return graphql.Null
-	}
-	return out
-}
-
-var profileImplementors = []string{"Profile"}
-
-func (ec *executionContext) _Profile(ctx context.Context, sel ast.SelectionSet, obj *Profile) graphql.Marshaler {
-	fields := graphql.CollectFields(ec.RequestContext, sel, profileImplementors)
-
-	out := graphql.NewFieldSet(fields)
-	var invalids uint32
-	for i, field := range fields {
-		switch field.Name {
-		case "__typename":
-			out.Values[i] = graphql.MarshalString("Profile")
-		case "id":
-			out.Values[i] = ec._Profile_id(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				invalids++
-			}
-		case "name":
-			out.Values[i] = ec._Profile_name(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				invalids++
-			}
-		default:
-			panic("unknown field " + strconv.Quote(field.Name))
-		}
-	}
-	out.Dispatch()
-	if invalids > 0 {
-		return graphql.Null
-	}
-	return out
-}
-
-var profileViewingInfoImplementors = []string{"ProfileViewingInfo"}
-
-func (ec *executionContext) _ProfileViewingInfo(ctx context.Context, sel ast.SelectionSet, obj *ProfileViewingInfo) graphql.Marshaler {
-	fields := graphql.CollectFields(ec.RequestContext, sel, profileViewingInfoImplementors)
-
-	out := graphql.NewFieldSet(fields)
-	var invalids uint32
-	for i, field := range fields {
-		switch field.Name {
-		case "__typename":
-			out.Values[i] = graphql.MarshalString("ProfileViewingInfo")
-		case "media_id":
-			out.Values[i] = ec._ProfileViewingInfo_media_id(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				invalids++
-			}
-		case "profile_id":
-			out.Values[i] = ec._ProfileViewingInfo_profile_id(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				invalids++
-			}
-		case "time_point":
-			out.Values[i] = ec._ProfileViewingInfo_time_point(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				invalids++
-			}
-		case "timestamp":
-			out.Values[i] = ec._ProfileViewingInfo_timestamp(ctx, field, obj)
+		case "updateMedia":
+			out.Values[i] = ec._Mutation_updateMedia(ctx, field)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
@@ -2125,28 +1674,6 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 					}
 				}()
 				res = ec._Query_media(ctx, field)
-				return res
-			})
-		case "profiles":
-			field := field
-			out.Concurrently(i, func() (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._Query_profiles(ctx, field)
-				return res
-			})
-		case "viewing_info":
-			field := field
-			out.Concurrently(i, func() (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._Query_viewing_info(ctx, field)
 				return res
 			})
 		case "__type":
@@ -2451,36 +1978,8 @@ func (ec *executionContext) marshalNMedia2ᚖgithubᚗcomᚋNovakovIKᚋflexᚐM
 	return ec._Media(ctx, sel, v)
 }
 
-func (ec *executionContext) marshalNProfile2githubᚗcomᚋNovakovIKᚋflexᚐProfile(ctx context.Context, sel ast.SelectionSet, v Profile) graphql.Marshaler {
-	return ec._Profile(ctx, sel, &v)
-}
-
-func (ec *executionContext) marshalNProfile2ᚖgithubᚗcomᚋNovakovIKᚋflexᚐProfile(ctx context.Context, sel ast.SelectionSet, v *Profile) graphql.Marshaler {
-	if v == nil {
-		if !ec.HasError(graphql.GetResolverContext(ctx)) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	return ec._Profile(ctx, sel, v)
-}
-
-func (ec *executionContext) marshalNProfileViewingInfo2githubᚗcomᚋNovakovIKᚋflexᚐProfileViewingInfo(ctx context.Context, sel ast.SelectionSet, v ProfileViewingInfo) graphql.Marshaler {
-	return ec._ProfileViewingInfo(ctx, sel, &v)
-}
-
-func (ec *executionContext) marshalNProfileViewingInfo2ᚖgithubᚗcomᚋNovakovIKᚋflexᚐProfileViewingInfo(ctx context.Context, sel ast.SelectionSet, v *ProfileViewingInfo) graphql.Marshaler {
-	if v == nil {
-		if !ec.HasError(graphql.GetResolverContext(ctx)) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	return ec._ProfileViewingInfo(ctx, sel, v)
-}
-
-func (ec *executionContext) unmarshalNProfileViewingInfoInput2githubᚗcomᚋNovakovIKᚋflexᚐProfileViewingInfoInput(ctx context.Context, v interface{}) (ProfileViewingInfoInput, error) {
-	return ec.unmarshalInputProfileViewingInfoInput(ctx, v)
+func (ec *executionContext) unmarshalNMediaInput2githubᚗcomᚋNovakovIKᚋflexᚐMediaInput(ctx context.Context, v interface{}) (MediaInput, error) {
+	return ec.unmarshalInputMediaInput(ctx, v)
 }
 
 func (ec *executionContext) unmarshalNString2string(ctx context.Context, v interface{}) (string, error) {
@@ -2797,86 +2296,6 @@ func (ec *executionContext) marshalOMedia2ᚕᚖgithubᚗcomᚋNovakovIKᚋflex�
 				defer wg.Done()
 			}
 			ret[i] = ec.marshalNMedia2ᚖgithubᚗcomᚋNovakovIKᚋflexᚐMedia(ctx, sel, v[i])
-		}
-		if isLen1 {
-			f(i)
-		} else {
-			go f(i)
-		}
-
-	}
-	wg.Wait()
-	return ret
-}
-
-func (ec *executionContext) marshalOProfile2ᚕᚖgithubᚗcomᚋNovakovIKᚋflexᚐProfile(ctx context.Context, sel ast.SelectionSet, v []*Profile) graphql.Marshaler {
-	if v == nil {
-		return graphql.Null
-	}
-	ret := make(graphql.Array, len(v))
-	var wg sync.WaitGroup
-	isLen1 := len(v) == 1
-	if !isLen1 {
-		wg.Add(len(v))
-	}
-	for i := range v {
-		i := i
-		rctx := &graphql.ResolverContext{
-			Index:  &i,
-			Result: &v[i],
-		}
-		ctx := graphql.WithResolverContext(ctx, rctx)
-		f := func(i int) {
-			defer func() {
-				if r := recover(); r != nil {
-					ec.Error(ctx, ec.Recover(ctx, r))
-					ret = nil
-				}
-			}()
-			if !isLen1 {
-				defer wg.Done()
-			}
-			ret[i] = ec.marshalNProfile2ᚖgithubᚗcomᚋNovakovIKᚋflexᚐProfile(ctx, sel, v[i])
-		}
-		if isLen1 {
-			f(i)
-		} else {
-			go f(i)
-		}
-
-	}
-	wg.Wait()
-	return ret
-}
-
-func (ec *executionContext) marshalOProfileViewingInfo2ᚕᚖgithubᚗcomᚋNovakovIKᚋflexᚐProfileViewingInfo(ctx context.Context, sel ast.SelectionSet, v []*ProfileViewingInfo) graphql.Marshaler {
-	if v == nil {
-		return graphql.Null
-	}
-	ret := make(graphql.Array, len(v))
-	var wg sync.WaitGroup
-	isLen1 := len(v) == 1
-	if !isLen1 {
-		wg.Add(len(v))
-	}
-	for i := range v {
-		i := i
-		rctx := &graphql.ResolverContext{
-			Index:  &i,
-			Result: &v[i],
-		}
-		ctx := graphql.WithResolverContext(ctx, rctx)
-		f := func(i int) {
-			defer func() {
-				if r := recover(); r != nil {
-					ec.Error(ctx, ec.Recover(ctx, r))
-					ret = nil
-				}
-			}()
-			if !isLen1 {
-				defer wg.Done()
-			}
-			ret[i] = ec.marshalNProfileViewingInfo2ᚖgithubᚗcomᚋNovakovIKᚋflexᚐProfileViewingInfo(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)

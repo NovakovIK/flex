@@ -1,38 +1,25 @@
 type Media {
-    id:             Int!
-    name:           String!
-    duration:       Int!
-    last_modified:  Int!
-    status:         String!
+    id: Int!
+    name: String!
+    path: String!
+    duration: Int!,
+    created: Int!,
+    status: String!,
+    time_point: Int!,
+    last_seen: Int!
 }
 
-type Profile {
-    id:     Int!
-    name:   String!
-}
-
-type ProfileViewingInfo{
-    media_id:   Int!
-    profile_id: Int!
-    time_point: Int!
-    timestamp:  Int!
-}
-
-input ProfileViewingInfoInput{
-    media_id:   Int!
-    profile_id: Int!
-    time_point: Int!
-    timestamp:  Int!
+input MediaInput {
+    id: Int!
+    name: String!
+    time_point: Int!,
+    last_seen: Int!
 }
 
 type Query {
     media(id: Int): [Media!]
-    profiles(id: Int): [Profile!]
-    viewing_info(media_id: Int, profile_id: Int): [ProfileViewingInfo!]
 }
 
 type Mutation {
-    newProfile(name: String!): Profile!
-    updateProfile(id: Int!, new_name: String!): Profile!
-    updateOrInsertProfileViewingInfo(input: ProfileViewingInfoInput!): ProfileViewingInfo!
+    updateMedia(input: MediaInput!): Media!
 }

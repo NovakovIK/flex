@@ -13,23 +13,36 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"strconv"
 	"syscall"
 )
 
 func main() {
-	mediaDir := flag.String("media-dir", "~/Videos", "path to direcotry with videos")
+	mediaDir := flag.String("media-dir", "~/Videos", "path to directory with videos")
 	flag.Parse()
 
 	s := storage.NewStorage()
 
 	scan := scanner.NewScanner(s, *mediaDir)
 	sync := scanner.NewSyncUtil(s, scan)
-	go scan.Scan()
-	go sync.Start()
+	go func() { log.Error(scan.Scan()) }()
+	go func() { log.Error(sync.Start()) }()
 
 	router := mux.NewRouter()
 	router.Handle("/", handler.Playground("GraphQL playground", "/query"))
 	router.Handle("/query", handler.GraphQL(flex.NewExecutableSchema(flex.Config{Resolvers: resolvers.NewResolver(s)})))
+	router.HandleFunc("/videos/{id}", func(w http.ResponseWriter, r *http.Request) {
+		vars := mux.Vars(r)
+		id, err := strconv.Atoi(vars["id"])
+		if err != nil {
+			w.WriteHeader(http.StatusBadRequest)
+			log.Error(err)
+			return
+		}
+
+		_ = id
+		//http.ServeContent()
+	})
 
 	server := http.Server{
 		Addr:    ":8080",

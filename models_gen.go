@@ -3,28 +3,19 @@
 package flex
 
 type Media struct {
-	ID           int    `json:"id"`
-	Name         string `json:"name"`
-	Duration     int    `json:"duration"`
-	LastModified int    `json:"last_modified"`
-	Status       string `json:"status"`
+	ID        int    `json:"id"`
+	Name      string `json:"name"`
+	Path      string `json:"path"`
+	Duration  int    `json:"duration"`
+	Created   int    `json:"created"`
+	Status    string `json:"status"`
+	TimePoint int    `json:"time_point"`
+	LastSeen  int    `json:"last_seen"`
 }
 
-type Profile struct {
-	ID   int    `json:"id"`
-	Name string `json:"name"`
-}
-
-type ProfileViewingInfo struct {
-	MediaID   int `json:"media_id"`
-	ProfileID int `json:"profile_id"`
-	TimePoint int `json:"time_point"`
-	Timestamp int `json:"timestamp"`
-}
-
-type ProfileViewingInfoInput struct {
-	MediaID   int `json:"media_id"`
-	ProfileID int `json:"profile_id"`
-	TimePoint int `json:"time_point"`
-	Timestamp int `json:"timestamp"`
+type MediaInput struct {
+	ID        int    `json:"id"`
+	Name      string `json:"name"`
+	TimePoint int    `json:"time_point"`
+	LastSeen  int    `json:"last_seen"`
 }

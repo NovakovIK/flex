@@ -25,12 +25,11 @@ func (s SyncUtil) Start() error {
 		case filePath := <-s.scanner.CreatedFiles:
 			log.Info("Created file: " + filePath)
 			media := storage.Media{
-				ID:           0,
-				Name:         path.Base(filePath),
-				Path:         filePath,
-				Duration:     int(rand.Int63()),
-				LastModified: int(rand.Int63()),
-				Status:       storage.Available,
+				Name:     path.Base(filePath),
+				Path:     filePath,
+				Status:   storage.Available,
+				Created:  int(rand.Int63()),
+				Duration: int(rand.Int63()),
 			}
 
 			if err := s.storage.MediaDAO.Insert(media); err != nil {
