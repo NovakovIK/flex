@@ -44,6 +44,7 @@ type ComplexityRoot struct {
 	Media struct {
 		Created   func(childComplexity int) int
 		Duration  func(childComplexity int) int
+		Heigth    func(childComplexity int) int
 		ID        func(childComplexity int) int
 		LastSeen  func(childComplexity int) int
 		Name      func(childComplexity int) int
@@ -51,6 +52,7 @@ type ComplexityRoot struct {
 		Status    func(childComplexity int) int
 		Thumbnail func(childComplexity int) int
 		TimePoint func(childComplexity int) int
+		Width     func(childComplexity int) int
 	}
 
 	Mutation struct {
@@ -97,6 +99,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Media.Duration(childComplexity), true
+
+	case "Media.heigth":
+		if e.complexity.Media.Heigth == nil {
+			break
+		}
+
+		return e.complexity.Media.Heigth(childComplexity), true
 
 	case "Media.id":
 		if e.complexity.Media.ID == nil {
@@ -146,6 +155,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Media.TimePoint(childComplexity), true
+
+	case "Media.width":
+		if e.complexity.Media.Width == nil {
+			break
+		}
+
+		return e.complexity.Media.Width(childComplexity), true
 
 	case "Mutation.updateMedia":
 		if e.complexity.Mutation.UpdateMedia == nil {
@@ -257,7 +273,9 @@ var parsedSchema = gqlparser.MustLoadSchema(
     status: String!,
     time_point: Int!,
     last_seen: Int!,
-    thumbnail: String!
+    thumbnail: String!,
+    width: Int!,
+    heigth: Int!
 }
 
 input MediaInput {
@@ -596,6 +614,60 @@ func (ec *executionContext) _Media_thumbnail(ctx context.Context, field graphql.
 	rctx.Result = res
 	ctx = ec.Tracer.StartFieldChildExecution(ctx)
 	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Media_width(ctx context.Context, field graphql.CollectedField, obj *Media) graphql.Marshaler {
+	ctx = ec.Tracer.StartFieldExecution(ctx, field)
+	defer func() { ec.Tracer.EndFieldExecution(ctx) }()
+	rctx := &graphql.ResolverContext{
+		Object:   "Media",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+	ctx = graphql.WithResolverContext(ctx, rctx)
+	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
+	resTmp := ec.FieldMiddleware(ctx, obj, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Width, nil
+	})
+	if resTmp == nil {
+		if !ec.HasError(rctx) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	rctx.Result = res
+	ctx = ec.Tracer.StartFieldChildExecution(ctx)
+	return ec.marshalNInt2int(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Media_heigth(ctx context.Context, field graphql.CollectedField, obj *Media) graphql.Marshaler {
+	ctx = ec.Tracer.StartFieldExecution(ctx, field)
+	defer func() { ec.Tracer.EndFieldExecution(ctx) }()
+	rctx := &graphql.ResolverContext{
+		Object:   "Media",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+	ctx = graphql.WithResolverContext(ctx, rctx)
+	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
+	resTmp := ec.FieldMiddleware(ctx, obj, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Heigth, nil
+	})
+	if resTmp == nil {
+		if !ec.HasError(rctx) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	rctx.Result = res
+	ctx = ec.Tracer.StartFieldChildExecution(ctx)
+	return ec.marshalNInt2int(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Mutation_updateMedia(ctx context.Context, field graphql.CollectedField) graphql.Marshaler {
@@ -1646,6 +1718,16 @@ func (ec *executionContext) _Media(ctx context.Context, sel ast.SelectionSet, ob
 			}
 		case "thumbnail":
 			out.Values[i] = ec._Media_thumbnail(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "width":
+			out.Values[i] = ec._Media_width(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "heigth":
+			out.Values[i] = ec._Media_heigth(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}

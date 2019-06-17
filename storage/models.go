@@ -27,5 +27,7 @@ type (
 		LastSeen  int         `json:"last_seen" db:"LastSeen"`
 		TimePoint int         `json:"time_point" db:"TimePoint"`
 		Thumbnail []byte      `json:"thumbnail" db:"Thumbnail"`
+		Width     int         `json:"width" db:"Width"`
+		Height    int         `json:"height" db:"Height"`
 	}
 )

@@ -7,7 +7,9 @@ type Media {
     status: String!,
     time_point: Int!,
     last_seen: Int!,
-    thumbnail: String!
+    thumbnail: String!,
+    width: Int!,
+    heigth: Int!
 }
 
 input MediaInput {

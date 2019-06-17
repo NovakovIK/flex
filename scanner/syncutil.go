@@ -65,6 +65,8 @@ func (s SyncUtil) Start() error {
 				Created:   int(time.Now().UnixNano()),
 				Duration:  int(src.Length.Nanoseconds()),
 				Thumbnail: thumb.Data,
+				Width:     int(src.Width),
+				Height:    int(src.Height),
 			}
 			if err := s.storage.MediaDAO.Insert(media); err != nil {
 				return err

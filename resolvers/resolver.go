@@ -54,6 +54,8 @@ func (r *queryResolver) Media(ctx context.Context, id *int) ([]*flex.Media, erro
 			TimePoint: d.TimePoint,
 			LastSeen:  d.LastSeen,
 			Thumbnail: string(d.Thumbnail),
+			Width:     d.Width,
+			Heigth:    d.Height,
 		})
 	}
 
@@ -77,5 +79,7 @@ func (r *mutationResolver) UpdateMedia(ctx context.Context, input flex.MediaInpu
 		TimePoint: media.TimePoint,
 		LastSeen:  media.LastSeen,
 		Thumbnail: string(media.Thumbnail),
+		Width:     media.Width,
+		Heigth:    media.Height,
 	}, nil
 }
