@@ -49,6 +49,7 @@ type ComplexityRoot struct {
 		Name      func(childComplexity int) int
 		Path      func(childComplexity int) int
 		Status    func(childComplexity int) int
+		Thumbnail func(childComplexity int) int
 		TimePoint func(childComplexity int) int
 	}
 
@@ -131,6 +132,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Media.Status(childComplexity), true
+
+	case "Media.thumbnail":
+		if e.complexity.Media.Thumbnail == nil {
+			break
+		}
+
+		return e.complexity.Media.Thumbnail(childComplexity), true
 
 	case "Media.time_point":
 		if e.complexity.Media.TimePoint == nil {
@@ -248,7 +256,8 @@ var parsedSchema = gqlparser.MustLoadSchema(
     created: Int!,
     status: String!,
     time_point: Int!,
-    last_seen: Int!
+    last_seen: Int!,
+    thumbnail: String!
 }
 
 input MediaInput {
@@ -560,6 +569,33 @@ func (ec *executionContext) _Media_last_seen(ctx context.Context, field graphql.
 	rctx.Result = res
 	ctx = ec.Tracer.StartFieldChildExecution(ctx)
 	return ec.marshalNInt2int(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Media_thumbnail(ctx context.Context, field graphql.CollectedField, obj *Media) graphql.Marshaler {
+	ctx = ec.Tracer.StartFieldExecution(ctx, field)
+	defer func() { ec.Tracer.EndFieldExecution(ctx) }()
+	rctx := &graphql.ResolverContext{
+		Object:   "Media",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+	ctx = graphql.WithResolverContext(ctx, rctx)
+	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
+	resTmp := ec.FieldMiddleware(ctx, obj, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Thumbnail, nil
+	})
+	if resTmp == nil {
+		if !ec.HasError(rctx) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	rctx.Result = res
+	ctx = ec.Tracer.StartFieldChildExecution(ctx)
+	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Mutation_updateMedia(ctx context.Context, field graphql.CollectedField) graphql.Marshaler {
@@ -1605,6 +1641,11 @@ func (ec *executionContext) _Media(ctx context.Context, sel ast.SelectionSet, ob
 			}
 		case "last_seen":
 			out.Values[i] = ec._Media_last_seen(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "thumbnail":
+			out.Values[i] = ec._Media_thumbnail(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}

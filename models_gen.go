@@ -11,6 +11,7 @@ type Media struct {
 	Status    string `json:"status"`
 	TimePoint int    `json:"time_point"`
 	LastSeen  int    `json:"last_seen"`
+	Thumbnail string `json:"thumbnail"`
 }
 
 type MediaInput struct {
