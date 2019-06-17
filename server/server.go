@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"flag"
 	"github.com/99designs/gqlgen/handler"
 	"github.com/NovakovIK/flex"
 	"github.com/NovakovIK/flex/resolvers"
@@ -12,14 +13,16 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
-	"path"
 	"syscall"
 )
 
 func main() {
+	mediaDir := flag.String("media-dir", "~/Videos", "path to direcotry with videos")
+	flag.Parse()
+
 	s := storage.NewStorage()
 
-	scan := scanner.NewScanner(s, path.Join(os.Getenv("HOME"), "/Videos"))
+	scan := scanner.NewScanner(s, *mediaDir)
 	sync := scanner.NewSyncUtil(s, scan)
 	go scan.Scan()
 	go sync.Start()

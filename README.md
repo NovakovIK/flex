@@ -5,6 +5,12 @@
 
 Flex Server is an application used for synchronization and streaming your media library to other devices.
 
+## Build & Run
+
+    go mod download
+    go build -o flex server/server.go
+    ./flex --media-dir ~/Videos
+
 ### Use case diagram
 ![use_case_diagram](https://user-images.githubusercontent.com/26042049/54488341-4244f880-48a9-11e9-9bf5-4e62dd35980c.png)
 
