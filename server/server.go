@@ -25,8 +25,18 @@ func main() {
 
 	scan := scanner.NewScanner(s, *mediaDir)
 	sync := scanner.NewSyncUtil(s, scan)
-	go func() { log.Error(scan.Scan()) }()
-	go func() { log.Error(sync.Start()) }()
+
+	go func() {
+		if err := scan.Scan(); err != nil {
+			log.Error(err)
+		}
+	}()
+
+	go func() {
+		if err := sync.Start(); err != nil {
+			log.Error(err)
+		}
+	}()
 
 	router := mux.NewRouter()
 	router.Handle("/", handler.Playground("GraphQL playground", "/query"))
