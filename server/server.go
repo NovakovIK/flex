@@ -40,8 +40,14 @@ func main() {
 			return
 		}
 
-		_ = id
-		//http.ServeContent()
+		media, err := s.MediaDAO.FetchByID(id)
+		if err != nil || len(media) < 1 {
+			w.WriteHeader(http.StatusBadRequest)
+			log.Error(err)
+			return
+		}
+
+		http.ServeFile(w, r, media[0].Path)
 	})
 
 	server := http.Server{
