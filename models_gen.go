@@ -14,6 +14,7 @@ type Media struct {
 	Thumbnail string `json:"thumbnail"`
 	Width     int    `json:"width"`
 	Heigth    int    `json:"heigth"`
+	Size      int    `json:"size"`
 }
 
 type MediaInput struct {

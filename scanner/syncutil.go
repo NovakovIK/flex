@@ -67,6 +67,7 @@ func (s SyncUtil) Start() error {
 				Thumbnail: thumb.Data,
 				Width:     int(src.Width),
 				Height:    int(src.Height),
+				Size:      len(src.Data),
 			}
 			if err := s.storage.MediaDAO.Insert(media); err != nil {
 				return err

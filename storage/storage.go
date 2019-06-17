@@ -49,7 +49,8 @@ func (s *Storage) init() {
 		TimePoint integer not null,	
 		Thumbnail blob not null,
 		Width integer not null,
-		Height integer not null
+		Height integer not null,
+		Size integer not null
 	);
 	
 	create unique index if not exists media_Path_uindex
@@ -73,7 +74,7 @@ func (d *MediaDAO) FetchByID(id int) ([]Media, error) {
 }
 func (d MediaDAO) Insert(media Media) error {
 	_, err := d.DB.Exec(
-		"insert into media(MediaName, Path, Status, Created, Duration, TimePoint, LastSeen, Thumbnail, Width, Height) values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)",
+		"insert into media(MediaName, Path, Status, Created, Duration, TimePoint, LastSeen, Thumbnail, Width, Height, Size) values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)",
 		media.Name,
 		media.Path,
 		media.Status,
@@ -84,6 +85,7 @@ func (d MediaDAO) Insert(media Media) error {
 		media.Thumbnail,
 		media.Width,
 		media.Height,
+		media.Size,
 	)
 	return err
 }

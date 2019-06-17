@@ -49,6 +49,7 @@ type ComplexityRoot struct {
 		LastSeen  func(childComplexity int) int
 		Name      func(childComplexity int) int
 		Path      func(childComplexity int) int
+		Size      func(childComplexity int) int
 		Status    func(childComplexity int) int
 		Thumbnail func(childComplexity int) int
 		TimePoint func(childComplexity int) int
@@ -134,6 +135,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Media.Path(childComplexity), true
+
+	case "Media.size":
+		if e.complexity.Media.Size == nil {
+			break
+		}
+
+		return e.complexity.Media.Size(childComplexity), true
 
 	case "Media.status":
 		if e.complexity.Media.Status == nil {
@@ -275,7 +283,8 @@ var parsedSchema = gqlparser.MustLoadSchema(
     last_seen: Int!,
     thumbnail: String!,
     width: Int!,
-    heigth: Int!
+    heigth: Int!,
+    size: Int!
 }
 
 input MediaInput {
@@ -657,6 +666,33 @@ func (ec *executionContext) _Media_heigth(ctx context.Context, field graphql.Col
 	resTmp := ec.FieldMiddleware(ctx, obj, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.Heigth, nil
+	})
+	if resTmp == nil {
+		if !ec.HasError(rctx) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	rctx.Result = res
+	ctx = ec.Tracer.StartFieldChildExecution(ctx)
+	return ec.marshalNInt2int(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Media_size(ctx context.Context, field graphql.CollectedField, obj *Media) graphql.Marshaler {
+	ctx = ec.Tracer.StartFieldExecution(ctx, field)
+	defer func() { ec.Tracer.EndFieldExecution(ctx) }()
+	rctx := &graphql.ResolverContext{
+		Object:   "Media",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+	ctx = graphql.WithResolverContext(ctx, rctx)
+	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
+	resTmp := ec.FieldMiddleware(ctx, obj, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Size, nil
 	})
 	if resTmp == nil {
 		if !ec.HasError(rctx) {
@@ -1728,6 +1764,11 @@ func (ec *executionContext) _Media(ctx context.Context, sel ast.SelectionSet, ob
 			}
 		case "heigth":
 			out.Values[i] = ec._Media_heigth(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "size":
+			out.Values[i] = ec._Media_size(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}

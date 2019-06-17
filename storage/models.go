@@ -29,5 +29,6 @@ type (
 		Thumbnail []byte      `json:"thumbnail" db:"Thumbnail"`
 		Width     int         `json:"width" db:"Width"`
 		Height    int         `json:"height" db:"Height"`
+		Size      int         `json:"size" db:"Size"`
 	}
 )

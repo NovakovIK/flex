@@ -9,7 +9,8 @@ type Media {
     last_seen: Int!,
     thumbnail: String!,
     width: Int!,
-    heigth: Int!
+    heigth: Int!,
+    size: Int!
 }
 
 input MediaInput {
