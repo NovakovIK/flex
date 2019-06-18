@@ -1,2 +1,0 @@
-(window.webpackJsonp=window.webpackJsonp||[]).push([[0],{22:function(e,n,t){"use strict";t.r(n);var a=t(0),o=t.n(a),r=t(6),c=t.n(r),i=t(7),l=t.n(i);var d=function(){return o.a.createElement("div",{className:"App"},o.a.createElement(l.a,{value:'{"name": "My Flex Server", "addr": "'.concat(window.location.hostname,'", "port": ').concat(window.location.port,"}")}))};c.a.render(o.a.createElement(d,null),document.getElementById("root"))},8:function(e,n,t){e.exports=t(22)}},[[8,1,2]]]);
-//# sourceMappingURL=main.ee1b7f53.chunk.js.map
