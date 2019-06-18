@@ -39,7 +39,6 @@ func main() {
 	}()
 
 	router := mux.NewRouter()
-	router.PathPrefix("/").Handler(http.FileServer(http.Dir("./server/static/")))
 	router.Handle("/playground", handler.Playground("GraphQL playground", "/query"))
 	router.Handle("/query", handler.GraphQL(flex.NewExecutableSchema(flex.Config{Resolvers: resolvers.NewResolver(s)})))
 	router.HandleFunc("/videos/{id}", func(w http.ResponseWriter, r *http.Request) {
@@ -60,7 +59,7 @@ func main() {
 
 		http.ServeFile(w, r, media[0].Path)
 	})
-
+	router.PathPrefix("/").Handler(http.FileServer(http.Dir("./server/static/")))
 	server := http.Server{
 		Addr:    ":8080",
 		Handler: router,
