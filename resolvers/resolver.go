@@ -2,6 +2,7 @@ package resolvers
 
 import (
 	"context"
+	"encoding/base64"
 	"github.com/NovakovIK/flex"
 	"github.com/NovakovIK/flex/storage"
 	log "github.com/sirupsen/logrus"
@@ -53,7 +54,7 @@ func (r *queryResolver) Media(ctx context.Context, id *int) ([]*flex.Media, erro
 			Status:    d.Status.String(),
 			TimePoint: d.TimePoint,
 			LastSeen:  d.LastSeen,
-			Thumbnail: string(d.Thumbnail),
+			Thumbnail: base64.StdEncoding.EncodeToString(d.Thumbnail),
 			Width:     d.Width,
 			Heigth:    d.Height,
 			Size:      d.Size,
@@ -64,24 +65,24 @@ func (r *queryResolver) Media(ctx context.Context, id *int) ([]*flex.Media, erro
 }
 
 func (r *mutationResolver) UpdateMedia(ctx context.Context, input flex.MediaInput) (*flex.Media, error) {
-	media, err := r.storage.MediaDAO.Update(input.ID, input.Name, input.LastSeen, input.TimePoint)
+	d, err := r.storage.MediaDAO.Update(input.ID, input.Name, input.LastSeen, input.TimePoint)
 	if err != nil {
 		log.Error(err)
 		return nil, err
 	}
 
 	return &flex.Media{
-		ID:        media.ID,
-		Name:      media.Name,
-		Path:      media.Path,
-		Duration:  media.Duration,
-		Created:   media.Created,
-		Status:    media.Status.String(),
-		TimePoint: media.TimePoint,
-		LastSeen:  media.LastSeen,
-		Thumbnail: string(media.Thumbnail),
-		Width:     media.Width,
-		Heigth:    media.Height,
-		Size:      media.Size,
+		ID:        d.ID,
+		Name:      d.Name,
+		Path:      d.Path,
+		Duration:  d.Duration,
+		Created:   d.Created,
+		Status:    d.Status.String(),
+		TimePoint: d.TimePoint,
+		LastSeen:  d.LastSeen,
+		Thumbnail: base64.StdEncoding.EncodeToString(d.Thumbnail),
+		Width:     d.Width,
+		Heigth:    d.Height,
+		Size:      d.Size,
 	}, nil
 }

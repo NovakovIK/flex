@@ -62,8 +62,8 @@ func (s SyncUtil) Start() error {
 				Name:      path.Base(filePath),
 				Path:      filePath,
 				Status:    storage.Available,
-				Created:   int(time.Now().UnixNano()),
-				Duration:  int(src.Length.Nanoseconds()),
+				Created:   int(time.Now().Unix()),
+				Duration:  int(src.Length.Seconds()),
 				Thumbnail: thumb.Data,
 				Width:     int(src.Width),
 				Height:    int(src.Height),
@@ -74,6 +74,7 @@ func (s SyncUtil) Start() error {
 			}
 			src.Data = nil
 			thumb.Data = nil
+			media.Thumbnail = nil
 			log.Infof("%#v\n", src)
 			log.Infof("%#v\n", thumb)
 			log.Infof("%#v\n", media)
